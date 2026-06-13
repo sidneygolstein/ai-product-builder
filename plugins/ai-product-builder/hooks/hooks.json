@@ -2,22 +2,28 @@
   "hooks": {
     "SessionStart": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/audit-claude-md.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/session-start.sh\"" }]
       }
     ],
     "PreToolUse": [
       {
-        "hooks": [{ "type": "command", "command": "" }]
+        "matcher": "Bash",
+        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/destructive-guard.sh\"" }]
       }
     ],
     "PostToolUse": [
       {
-        "hooks": [{ "type": "command", "command": "" }]
+        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/post-tool-format.sh\"" }]
       }
     ],
     "Stop": [
       {
-        "hooks": [{ "type": "command", "command": "" }]
+        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/baseline-stop.sh\"" }]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/baseline-stop.sh\"" }]
       }
     ]
   }
