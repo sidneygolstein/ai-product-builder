@@ -1,5 +1,6 @@
 ---
 description: Gate 2 — plan + isolated worktree per slice. Use after /spec-review is approved. Produces a human-approved plan before any code is written.
+requires: superpowers plugin (superpowers:writing-plans). If not found, proceed without it — create the worktree, enumerate failing tests and files to change, present the plan to the human, then write it to ai/plans/<id>.md on approval.
 ---
 /superpowers:writing-plans
 Take slice <id> from ai/feature_list.json (Project=<project>). Create an isolated git worktree

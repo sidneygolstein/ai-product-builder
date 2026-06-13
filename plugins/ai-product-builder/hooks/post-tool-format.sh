@@ -24,13 +24,16 @@ import sys, json
 try:
     d = json.load(sys.stdin)
     ti = d.get('tool_input', {})
-    print(ti.get('file_path', ti.get('path', '')))
+    # NotebookEdit uses notebook_path; Edit/Write use file_path; fallback to path
+    print(ti.get('file_path', ti.get('notebook_path', ti.get('path', ''))))
 except Exception:
     print('')
 PYEOF
 )
 
-[ -z "$file_path" ] || [ ! -f "$file_path" ] && exit 0
+if [ -z "$file_path" ] || [ ! -f "$file_path" ]; then
+    exit 0
+fi
 
 ext="${file_path##*.}"
 

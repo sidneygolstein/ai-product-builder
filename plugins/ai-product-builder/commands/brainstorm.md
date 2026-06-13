@@ -1,5 +1,6 @@
 ---
 description: Intent → PRD. Refine a shippable requirement with the user before any code. Use at the start of every feature.
+requires: superpowers plugin (superpowers:brainstorming). If the skill is not found, proceed without it and apply the same discipline manually — one question at a time, no code, write the PRD to docs/brainstorms/.
 ---
 /superpowers:brainstorming
 I want to <change> on `<path>` in <project>: <what should appear/happen>. Today <current
