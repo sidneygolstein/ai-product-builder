@@ -192,6 +192,7 @@ Show every file's full content as a group — one fenced code block per file wit
 | `ai/progress.md` | Use `$(date +%Y-%m-%d)` for the date — not the model's clock. |
 | `ai/decisions/.gitkeep` | Keeps the ADR directory tracked in git. |
 | `ai/plans/.gitkeep` | Keeps the plans directory tracked in git. Written to by `/plan` after approval. |
+| `ai/verdicts/.gitkeep` | Keeps the verdicts directory tracked in git. Written to by `verifier` on block. |
 | `ai/init.sh` | Q3a–Q3c composed under `set -euo pipefail`. Then `chmod +x ai/init.sh`. |
 
 Exact templates: `references/file-templates.md`.
@@ -285,6 +286,7 @@ Files written:
   ai/init.sh               baseline: <test> && <lint> [&& <typecheck>]
   ai/decisions/.gitkeep    ADR directory (git-tracked)
   ai/plans/.gitkeep        plans directory (git-tracked)
+  ai/verdicts/.gitkeep     verifier verdicts directory (git-tracked)
   CLAUDE.md                project rules (created / merged)
 
 Notion:

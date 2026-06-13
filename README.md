@@ -15,13 +15,15 @@ Each stage is a slash command. Each gate requires explicit human approval before
 
 | Stage | Command | Agent involved | Output |
 |---|---|---|---|
+| anytime | `/next` | — | Highest-priority slice + exact command to run |
 | 1 | `/brainstorm` | — | PRD in `docs/brainstorms/` |
 | 2 | `/design` | — | Brief + handoff in `docs/design/` (optional — skip for backend-only) |
 | 3 | `/tickets` | — | Notion tickets + `ai/feature_list.json` |
 | Gate 1 | `/spec-review` | `spec-reviewer` | GO/NO-GO per ticket; applies edits |
-| Gate 2 | `/plan` | — | Human-approved plan; worktree created |
+| Gate 2 | `/plan` | — | Human-approved plan written to `ai/plans/<id>.md`; worktree created |
 | 5 | `/build` | — | TDD: failing tests first, then green |
-| Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence |
+| Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
+| on block | `/fix <id>` | — | Re-enter TDD from verifier failures in `ai/verdicts/<id>.md` |
 | Gate 3 | `/ship` | `simplifier`, `teacher` | PR + decision record |
 
 ## Install
@@ -54,8 +56,17 @@ Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enume
 ### `/build`
 TDD implementation via subagents per slice. Failing tests first, then code until green. Builds UI with the `frontend-design` skill when a design handoff exists. Does not mark the slice complete — the verifier decides.
 
+### `/next`
+Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO DO → TO SPEC REVIEW → none), and prints the single highest-priority slice with the exact command to run. Use at session start when unsure what to work on.
+
 ### `/verify` — Gate 3 prep
-Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), then the test suite, then Playwright browser verification for each AC state, then checks every `definition_of_done` item. Outputs `VERDICT: pass | warn | block` with evidence. Only `pass` allows status to move to TO REVIEW.
+Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), then the test suite, then Playwright browser verification for each AC state, then checks every `definition_of_done` item. Outputs `VERDICT: pass | warn | block` with evidence.
+- `pass` — status moves to TO REVIEW; proceed to `/ship`
+- `warn` — status moves to TO REVIEW; warnings are carried into the PR description for human review
+- `block` — status stays DOING; verifier writes `ai/verdicts/<id>.md`; run `/fix <id>`
+
+### `/fix <id>`
+Re-enters TDD from a verifier block. Reads `ai/verdicts/<id>.md`, addresses each listed failure with a targeted failing test then implementation, and re-runs the full suite to confirm no regressions. Does not change status — run `/verify` again when done.
 
 ### `/ship` — Gate 3
 Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`. After human PR approval, sets status DONE.
@@ -112,6 +123,7 @@ ai/
 ├── feature_list.json       # backlog + slices + ACs + definition_of_done (machine-readable)
 ├── progress.md             # session handoff log + teacher recaps
 ├── plans/                  # approved plan per slice — written by /plan, read by /build + /ship
+├── verdicts/               # verifier output per slice — written on block, read by /fix
 ├── decisions/              # per-slice decision records (ADRs)
 └── init.sh                 # baseline check: test && lint [&& typecheck]
 ```

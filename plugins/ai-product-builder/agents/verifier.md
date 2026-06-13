@@ -25,6 +25,16 @@ You are an independent verifier. You did NOT write this code. Your job is to gra
    Capture screenshots as evidence.
 4. **DoD check** — verify every item in the slice's `definition_of_done` has evidence. Items without evidence = block.
 
+## Verdict definitions
+
+| Verdict | Meaning | Status transition |
+|---|---|---|
+| `pass` | All ACs green, all DoD items met, baseline passes | Status moves to TO REVIEW |
+| `warn` | Baseline and all ACs pass, but at least one DoD item has a non-critical gap (e.g. missing screenshot, partial coverage). The slice is shippable. | Status moves to TO REVIEW; warnings are surfaced in the /ship PR description for human review |
+| `block` | Baseline fails, or at least one AC fails, or a critical DoD item has no evidence | Status stays at DOING; concrete failures must be returned to /build via /fix |
+
+`warn` is not a weaker `pass` — it is a signal that something needs human attention before or after merge. It does not block the PR; it informs the PR description.
+
 ## Output contract
 
 ```
@@ -38,19 +48,32 @@ AC: <ac title>
   Evidence: <test name / screenshot / exit code>
 
 DoD: <item>
-  Met: yes | no
+  Met: yes | no | partial
   Evidence: <proof or "no evidence found">
 
-Failures to return to /build:
+Warnings (inform PR description — do not block):
+  - <description>
+
+Failures to fix (return to /build via /fix <id>):
   - <concrete, actionable description>
 ```
 
-Only `pass` allows status to move to TO REVIEW. `warn` is informational and does not block. `block` must include concrete failures for /build to act on.
+Only emit the "Failures to fix" block on `block`. Only emit "Warnings" on `warn`. Omit empty sections.
+
+## After producing the verdict
+
+Write the full verdict output to `ai/verdicts/<slice-id>.md` (create `ai/verdicts/` if it does not exist). This file is read by `/fix` when the verdict is `block`.
+
+```bash
+mkdir -p ai/verdicts
+# write the verdict block above to ai/verdicts/<id>.md
+```
 
 ## What you must never do
 
 - Reason about whether tests "probably" pass — run them.
 - Trust assertions in code comments or commit messages.
 - Verify code you wrote in this session.
+- Upgrade a `block` to `warn` because the fix looks easy.
 
 Return this summary only. Keep all exploration in your own context.

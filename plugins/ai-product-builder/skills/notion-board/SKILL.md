@@ -84,6 +84,26 @@ When the user asks "what's next": return the **single highest-priority ticket** 
 2. Show the draft as a markdown table and wait for explicit confirmation ("yes", "go", "ok") before calling `mcp__notion__notion-create-pages`.
 3. On confirmation, create in Notion first, then update `ai/feature_list.json`.
 
+## Status transition protocol
+
+Every status change — by any command or agent — must follow this exact sequence. Never shortcut it.
+
+```
+BEFORE transitioning:
+  1. Read ai/config/notion.json — get notion_page_id for the slice from ai/feature_list.json
+  2. Confirm the slice's current status matches the expected "from" status (never skip forward)
+
+TO TRANSITION:
+  3. Call mcp__notion__notion-update-page with the slice's notion_page_id and new Status value
+  4. On success → update the slice's "status" field in ai/feature_list.json
+  5. On any failure at step 4 → write ai/decisions/divergence-<timestamp>.md, report, stop
+
+AFTER:
+  6. Confirm both Notion and ai/feature_list.json now show the same status
+```
+
+The write order (Notion first, local second) is intentional: Notion is the system of record. If local write fails, the divergence file preserves what happened. Never reverse the order.
+
 ## Updating status
 
 Update **both** Notion and `ai/feature_list.json` — they must never diverge.
