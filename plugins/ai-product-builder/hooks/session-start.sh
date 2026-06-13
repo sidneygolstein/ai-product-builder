@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 if [ ! -d ai ]; then
     mkdir -p ai/config ai/decisions
     printf '{"project": "", "slices": []}\n' > ai/feature_list.json
-    printf '# Progress\n\nRun /setup-project to initialize this project.\n' > ai/progress.md
+    printf '# (project) — Progress\n\n**Last updated:** (not yet set)\n\n## Where things stand\nNot initialized — run /setup-project to complete setup.\n\n## Active slice\nnone\n\n## Next up\nrun /setup-project\n' > ai/progress.md
     touch ai/decisions/.gitkeep
     printf '[ai-product-builder] ai/ scaffolded — run /setup-project to complete initialization.\n'
 fi

@@ -43,6 +43,7 @@ Top level:
 ```json
 {
   "id": "<e.g. F6.1>",
+  "feature": "<slug from Notion ticket Feature property — lowercase, dashes, e.g. 'user-search'>",
   "title": "<imperative description>",
   "status": "<exact Status value — case-sensitive, see notion-board skill>",
   "notion_page_id": "<Notion page UUID of the ticket>",

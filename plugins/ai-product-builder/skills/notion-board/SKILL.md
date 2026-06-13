@@ -98,6 +98,7 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
 ```json
 {
   "id": "F6.1",
+  "feature": "<slug — matches Notion ticket Feature property, e.g. 'user-search'>",
   "title": "Short imperative description",
   "status": "TO DO",
   "notion_page_id": "<Notion page UUID>",

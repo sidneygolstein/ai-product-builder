@@ -197,10 +197,10 @@ Exact templates: `references/file-templates.md`.
 
 ---
 
-## Step 6 — Write / merge CLAUDE.md and .claude/settings.json
+## Step 6 — Write / merge CLAUDE.md
 
-**Read each file first.** Show a diff (not the full file) before writing. Merge — never
-discard existing content. Wait for "yes / go / ok" per file.
+**Read the file first.** Show a diff (not the full file) before writing. Merge — never
+discard existing content. Wait for "yes / go / ok".
 
 ### CLAUDE.md (project root)
 
@@ -212,27 +212,15 @@ Use `@` import for the invariants block:
 ```
 If `@` imports are not supported in this environment, paste the five invariants inline.
 
-### .claude/settings.json
+### Note on hooks
 
-Merge under `"hooks"`. Required entries reference the plugin's guard scripts by path:
+Do NOT write anything to `.claude/settings.json` for hooks. The plugin ships its own
+`hooks.json` which Claude Code loads automatically via `CLAUDE_PLUGIN_ROOT`. Writing
+duplicate hook entries into a project-level settings.json would use stale paths that
+break on plugin updates.
 
-```json
-{
-  "hooks": {
-    "Stop": [{
-      "matcher": "",
-      "hooks": [{"type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/baseline-stop.sh\""}]
-    }],
-    "PreToolUse": [{
-      "matcher": "Bash",
-      "hooks": [{"type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/destructive-guard.sh\""}]
-    }]
-  }
-}
-```
-
-**Skip empty-command entries when merging** — never write `"command": ""` into
-settings.json. Strip them from any existing content being preserved.
+If `.claude/settings.json` already exists and contains an `ai-product-builder` hooks
+block from a previous setup run, show a diff and ask the user to remove those entries.
 
 ---
 
@@ -296,7 +284,6 @@ Files written:
   ai/init.sh               baseline: <test> && <lint> [&& <typecheck>]
   ai/decisions/.gitkeep    ADR directory (git-tracked)
   CLAUDE.md                project rules (created / merged)
-  .claude/settings.json    Stop hook + PreToolUse guards (merged)
 
 Notion:
   Projects DB row          Harness status = v2 full
@@ -317,9 +304,8 @@ Next:
   create/update call requires its own explicit "yes / go / ok."
 - **notion-board hard-stops** without `ai/config/notion.json` with `ticket_db_id` and
   `project_id` populated. Write the file in Step 5; backfill `project_id` after Step 7.
-- **Merge, never overwrite.** Read CLAUDE.md and .claude/settings.json before writing.
-  Show a diff. Preserve all existing content.
-- **No empty hook commands.** Never write `"command": ""` into settings.json.
+- **Merge, never overwrite.** Read CLAUDE.md before writing. Show a diff. Preserve all existing content.
+- **Never write hooks to project settings.json.** The plugin's `hooks.json` handles all hooks via `CLAUDE_PLUGIN_ROOT`. Writing duplicate paths into a project-level file breaks on plugin updates. Remove existing ai-product-builder hook blocks if found.
 - **One confirmation round for local files.** Show Step 5 files as a group; one "yes".
 - **Reconcile on re-run.** If `ai/feature_list.json` exists, diff first — never blindly
   overwrite slice statuses.

@@ -1,11 +1,9 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
+# Baseline: exit 0 = green; non-zero = broken — fix before closing session.
+# Replace the lines below with this project's real commands.
+# Remove the typecheck line if not applicable.
 
-echo "Initializing ai-product-builder project..."
-
-# Install dependencies if package.json exists
-if [ -f package.json ]; then
-  npm install
-fi
-
-echo "Done. Next: fill in feature_list.json and open progress.md."
+<test_command>
+<lint_command>
+# <typecheck_command>
