@@ -2,28 +2,28 @@
   "hooks": {
     "SessionStart": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/session-start.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"" }]
       }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/destructive-guard.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/destructive-guard.sh\"" }]
       }
     ],
     "PostToolUse": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/post-tool-format.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/post-tool-format.sh\"" }]
       }
     ],
     "Stop": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/baseline-stop.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/baseline-stop.sh\"" }]
       }
     ],
     "SubagentStop": [
       {
-        "hooks": [{ "type": "command", "command": "bash \"$HOME/.claude/plugins/ai-product-builder/hooks/baseline-stop.sh\"" }]
+        "hooks": [{ "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/baseline-stop.sh\"" }]
       }
     ]
   }
