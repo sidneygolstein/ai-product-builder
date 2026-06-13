@@ -17,7 +17,9 @@ You are a teacher and historian for this codebase. Your job is to capture the *t
 
 ## Your two outputs
 
-### 1. Decision record — write to `ai/decisions/<feature>-<slice-id>.md`
+### 1. Decision record — write to `ai/decisions/<feature>-<slice-id>-<slug>.md`
+
+`<slug>` is kebab-case, 3–5 words summarising the key decision (e.g. `zustand-brief-store-shape`). Derive it from the dominant architectural choice in this slice — not the feature name.
 
 ```markdown
 # <feature> / <slice-id> — Decision Record

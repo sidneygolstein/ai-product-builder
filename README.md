@@ -58,7 +58,7 @@ TDD implementation via subagents per slice. Failing tests first, then code until
 Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), then the test suite, then Playwright browser verification for each AC state, then checks every `definition_of_done` item. Outputs `VERDICT: pass | warn | block` with evidence. Only `pass` allows status to move to TO REVIEW.
 
 ### `/ship` — Gate 3
-Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR with description from the plan and a link to the Notion ticket. Runs `teacher` subagent to write `ai/decisions/<feature>-<id>.md` and append a recap to `ai/progress.md`. After human PR approval, sets status DONE.
+Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`. After human PR approval, sets status DONE.
 
 ## Subagents
 
@@ -69,7 +69,7 @@ Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits
 | `simplifier` | Inside `/ship` — before PR | Cannot fix bugs or change scope | `Read`, `Edit` |
 | `teacher` | Inside `/ship` — after merge | Writes history, not code | `Read`, `Edit`, `mcp__notion` |
 
-The Stop hook refuses to close a session without a verifier pass. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.
+The Stop hook blocks session close if `ai/init.sh` fails. Verifier pass is enforced by convention at Gate 3 — `/ship` will not proceed without one. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.
 
 ## Skills
 
@@ -111,6 +111,7 @@ ai/
 │   └── notion.json         # Notion database UUIDs (ticket_db_id, project_id, ...)
 ├── feature_list.json       # backlog + slices + ACs + definition_of_done (machine-readable)
 ├── progress.md             # session handoff log + teacher recaps
+├── plans/                  # approved plan per slice — written by /plan, read by /build + /ship
 ├── decisions/              # per-slice decision records (ADRs)
 └── init.sh                 # baseline check: test && lint [&& typecheck]
 ```

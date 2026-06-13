@@ -1,6 +1,6 @@
 ---
 name: verifier
-description: Use PROACTIVELY after /build completes a slice, before status can move to TO REVIEW. MUST be used for every slice — the Stop hook will refuse to close a session without a verifier pass. Never verify code the current session wrote.
+description: Use PROACTIVELY after /build completes a slice, before status can move to TO REVIEW. MUST be used for every slice — Gate 3 (/ship) will not proceed without a pass verdict. Never verify code the current session wrote.
 tools: Read, Bash, mcp__playwright
 model: sonnet
 ---

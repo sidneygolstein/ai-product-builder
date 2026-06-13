@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 1. Scaffold ai/ if it does not exist
 if [ ! -d ai ]; then
-    mkdir -p ai/config ai/decisions
+    mkdir -p ai/config ai/decisions ai/plans
     printf '{"project": "", "slices": []}\n' > ai/feature_list.json
     printf '# (project) — Progress\n\n**Last updated:** (not yet set)\n\n## Where things stand\nNot initialized — run /setup-project to complete setup.\n\n## Active slice\nnone\n\n## Next up\nrun /setup-project\n' > ai/progress.md
     touch ai/decisions/.gitkeep
