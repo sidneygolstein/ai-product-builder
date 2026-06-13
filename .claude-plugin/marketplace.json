@@ -1,0 +1,30 @@
+{
+  "name": "sidneygolstein-ai-product-builder",
+  "owner": {
+    "name": "Sidney Golstein",
+    "email": "golstein.sidney@gmail.com"
+  },
+  "description": "Sidney Golstein's AI Product Builder — end-to-end pipeline plugin for building AI-powered products with Claude Code.",
+  "plugins": [
+    {
+      "name": "ai-product-builder",
+      "source": "./plugins/ai-product-builder",
+      "description": "Opinionated end-to-end workflow plugin for building AI-powered products — from brainstorm to shipped PR.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Sidney Golstein",
+        "url": "https://github.com/sidneygolstein"
+      },
+      "keywords": [
+        "product",
+        "ai",
+        "workflow",
+        "tdd",
+        "spec",
+        "pipeline",
+        "notion",
+        "subagents"
+      ]
+    }
+  ]
+}

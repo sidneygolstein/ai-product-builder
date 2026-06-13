@@ -1,0 +1,10 @@
+---
+description: Gate 2 — plan + isolated worktree per slice. Use after /spec-review is approved. Produces a human-approved plan before any code is written.
+---
+/superpowers:writing-plans
+Take slice <id> from ai/feature_list.json (Project=<project>). Create an isolated git worktree
+at .worktrees/<id> on branch feature/<feature>-<id> from up-to-date main. Set status DOING.
+Plan: reuse existing <service/module> + design system; implement on `<path>` to match
+docs/design/<feature>/; behind `<feature_flag>`; emit `<event_name>`; no new infra.
+Enumerate test cases (populated, missing, loading, flag-off) as failing tests to write first.
+List every file to add/change. I review and approve before any code.

@@ -1,0 +1,9 @@
+{
+  "name": "ai-product-builder",
+  "version": "1.0.0",
+  "description": "Opinionated end-to-end workflow plugin for building AI-powered products — from brainstorm to shipped PR.",
+  "author": {
+    "name": "Sidney Golstein",
+    "url": "https://github.com/sidneygolstein"
+  }
+}
