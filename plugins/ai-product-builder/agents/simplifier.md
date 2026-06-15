@@ -19,6 +19,15 @@ You are a code simplifier. Your job is exactly one thing: make the slice's imple
 3. **Structural debt** — overly nested conditionals, functions doing two jobs, magic numbers without names
 4. **Circular references** — new imports that create dependency cycles
 5. **Error handling gaps** — uncaught promise rejections, missing null guards at system boundaries
+6. **stdlib** — hand-rolled logic the standard library ships; name the replacement function
+7. **native** — dependency or custom code doing what the platform already does natively; name the native feature
+8. **yagni** — abstraction with one implementation, factory with one product, config that never changes, layer with one caller
+9. **shrink** — same logic expressible in fewer lines; show the shorter form
+
+For items 6 and 7 (stdlib/native replacements): apply them directly if behaviour is provably equivalent — they go in the `ATTESTATION` path.
+For items 8 and 9 (yagni/shrink): if removing the abstraction could affect a future consumer or the scope is ambiguous, route to `HOLD` rather than applying. If the removal is unambiguously safe (e.g. unused export, dead branch), apply it.
+
+When you find a `ponytail:` comment marker in the diff, include it in the simplifications summary as: `ponytail-marker: <file>:<line> — <what was deferred>. ceiling: <limit named>. upgrade: <trigger>.` Do not remove these comments — they are intentional debt markers.
 
 ## Hard constraints
 
