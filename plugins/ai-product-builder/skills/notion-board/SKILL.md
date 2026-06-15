@@ -80,9 +80,15 @@ When the user asks "what's next": return the **single highest-priority ticket** 
 
 ## Creating a ticket
 
-1. Draft all seven properties.
-2. Show the draft as a markdown table and wait for explicit confirmation ("yes", "go", "ok") before calling `mcp__notion__notion-create-pages`.
-3. On confirmation, create in Notion first, then update `ai/feature_list.json`.
+> **`Project` is mandatory on every ticket — no exceptions.**
+> This includes Bug tickets, Chore tickets, and any follow-up tickets opened mid-pipeline.
+> Always read `project_id` from `ai/config/notion.json` and set the relation before creating.
+> A ticket without `Project` will not appear in the board filter and is effectively lost.
+
+1. Read `project_id` from `ai/config/notion.json`.
+2. Draft all seven properties — Title, Type, Feature, Status, **Project** (using `project_id`), Acceptance Criteria, Refs.
+3. Show the draft as a markdown table and wait for explicit confirmation ("yes", "go", "ok") before calling `mcp__notion__notion-create-pages`.
+4. On confirmation, create in Notion first, then update `ai/feature_list.json`.
 
 ## Status transition protocol
 
