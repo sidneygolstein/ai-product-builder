@@ -1,4 +1,4 @@
-# ai-product-builder — v1.10.0
+# ai-product-builder — v1.11.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -49,13 +49,13 @@ Three-part process — skip for backend-only slices:
 Reads the PRD and design handoff; creates one independently shippable Notion ticket per slice (aim 2–4). Each ticket has: Title, Type, Status=TO SPEC REVIEW, 2–3 sentence description, testable ACs covering all four states, and Refs. Mirrors every ticket into `ai/feature_list.json`. Shows a draft first — creates in Notion only after confirmation. Saves `docs/specs/<feature>.md`.
 
 ### `/spec-review` — Gate 1
-Dispatches the `spec-reviewer` subagent (did not author the tickets). Checks shippability, AC testability, edge-case coverage (null/empty, long input, partial data, flag-off, internal-data exposure), and scope. Returns GO/NO-GO per ticket and applies required edits. On human approval, moves passing tickets to TO DO.
+Dispatches the `spec-reviewer` subagent (did not author the tickets). Checks shippability, AC testability, edge-case coverage (null/empty, long input, partial data, flag-off, internal-data exposure), and scope. Returns GO/NO-GO per ticket and applies required edits. On human approval, updates status to TO DO in Notion then `ai/feature_list.json`.
 
 ### `/plan` — Gate 2
-Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enumerates failing tests to write first and every file to change. Sets status to DOING. Human approves the plan before any code is written. Uses `superpowers:writing-plans`.
+Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enumerates failing tests to write first and every file to change. Updates status to DOING in Notion then `ai/feature_list.json`. Human approves the plan before any code is written. Uses `superpowers:writing-plans`; development approach is always subagent-driven TDD.
 
 ### `/build`
-TDD implementation via subagents per slice. Failing tests first, then code until green. Builds UI with the `frontend-design` skill when a design handoff exists. Does not mark the slice complete — the verifier decides.
+TDD implementation via context-preloaded subagents. Main session gathers all context first (plan, source files, test files, design handoff), then classifies tasks as INDEPENDENT or DEPENDENT. Independent tasks are dispatched in parallel; dependent chains run strictly sequentially. Each subagent receives a self-contained brief and follows TDD: failing test first, then implement until green. Full suite runs after all agents return to catch conflicts. Does not mark the slice complete — the verifier decides.
 
 ### `/next`
 Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO DO → TO SPEC REVIEW → none), and prints the single highest-priority slice with the exact command to run. Use at session start when unsure what to work on.
@@ -70,7 +70,7 @@ Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (
 Re-enters TDD from a verifier block. Reads `ai/verdicts/<id>.md`, addresses each listed failure with a targeted failing test then implementation, and re-runs the full suite to confirm no regressions. Does not change status — run `/verify` again when done.
 
 ### `/ship` — Gate 3
-Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all seven required properties including the `Project` relation). Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`.
+Runs `simplifier` subagent (no behaviour change) → updates status to TO DEPLOY in Notion then `ai/feature_list.json`. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all seven required properties including the `Project` relation). Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`. On PR approval, updates status to DONE in Notion then `ai/feature_list.json`.
 
 ### `/land` — post-merge
 Run after the PR is approved and merged. Checks out main, pulls, sets status DONE in both Notion and `ai/feature_list.json`, removes the slice worktree and branch (with confirmation), writes a handoff via the `handoff` skill, and prompts `/clear` for a clean next session.

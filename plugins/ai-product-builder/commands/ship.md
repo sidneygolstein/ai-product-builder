@@ -17,8 +17,10 @@ Check the simplifier's output before continuing:
   The Project relation is mandatory — never omit it.
   Show the draft table and wait for explicit confirmation before creating in Notion.
 
-On proceed: set status TO DEPLOY. Then commit on the slice branch, push, open a PR;
-write the description from the plan (ai/plans/<id>.md) plus any simplifier warnings;
-link the Notion ticket. Use the teacher subagent to write
-ai/decisions/<feature>-<slice-id>-<slug>.md (hypothesis, alternatives, why, kill criteria)
-and append a recap to ai/progress.md. After I approve the PR, set status DONE.
+On proceed: update status to TO DEPLOY — Notion first (notion-board skill), then
+ai/feature_list.json. Then commit on the slice branch, push, open a PR; write the description
+from the plan (ai/plans/<id>.md) plus any simplifier warnings; link the Notion ticket.
+Use the teacher subagent to write ai/decisions/<feature>-<slice-id>-<slug>.md (hypothesis,
+alternatives, why, kill criteria) and append a recap to ai/progress.md.
+After I approve the PR, update status to DONE — Notion first (notion-board skill), then
+ai/feature_list.json.
