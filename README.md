@@ -1,4 +1,4 @@
-# ai-product-builder — v1.9.0
+# ai-product-builder — v1.10.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -84,7 +84,7 @@ Run after the PR is approved and merged. Checks out main, pulls, sets status DON
 | `simplifier` | Inside `/ship` — before PR | Cannot fix bugs or change scope | `Read`, `Edit` |
 | `teacher` | Inside `/ship` — after merge | Writes history, not code | `Read`, `Edit`, `mcp__notion` |
 
-The Stop hook blocks session close if `ai/init.sh` fails. Verifier pass is enforced by convention at Gate 3 — `/ship` will not proceed without one. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.
+Verifier pass is enforced by convention at Gate 3 — `/ship` will not proceed without one. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.
 
 ## Skills
 
@@ -96,15 +96,13 @@ The Stop hook blocks session close if `ai/init.sh` fails. Verifier pass is enfor
 
 ## Hooks
 
-Five hooks fire automatically — no configuration needed after install.
+Three hooks fire automatically — no configuration needed after install.
 
 | Event | Script | What it does |
 |---|---|---|
 | `SessionStart` | `session-start.sh` | Scaffolds `ai/` if missing; prints `ai/progress.md`; runs `ai/init.sh` (informational — never blocks); audits CLAUDE.md coverage. |
 | `PreToolUse(Bash)` | `destructive-guard.sh` | Blocks `rm -rf`, force-push, and reads of `.env` files before they run. Anti-footgun, not anti-malicious. |
 | `PostToolUse(Edit/Write)` | `post-tool-format.sh` | Auto-formats the file just written using the project's available formatters (Prettier/ESLint for TS/JS, Ruff for Python, gofmt for Go, rustfmt for Rust). Silently skips if no formatter is available. |
-| `Stop` | `baseline-stop.sh` | Refuses to close the session if `ai/init.sh` exits non-zero. Keeps the baseline green before context is lost. |
-| `SubagentStop` | `baseline-stop.sh` | Same check applied to subagent sessions. |
 
 ## Invariants
 
