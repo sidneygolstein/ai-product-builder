@@ -1,4 +1,4 @@
-# ai-product-builder
+# ai-product-builder — v1.9.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -7,7 +7,7 @@ A Claude Code plugin that encodes the full AI product development pipeline — f
 ## Pipeline
 
 ```
-/brainstorm → /design (optional) → /tickets → /spec-review → /plan → /build → /verify → /ship
+/brainstorm → /design (optional) → /tickets → /spec-review → /plan → /build → /verify → /ship → /land
                                                    ↑ Gate 1          ↑ Gate 2         ↑ Gate 3
 ```
 
@@ -24,7 +24,8 @@ Each stage is a slash command. Each gate requires explicit human approval before
 | 5 | `/build` | — | TDD: failing tests first, then green |
 | Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
 | on block | `/fix <id>` | — | Re-enter TDD from verifier failures in `ai/verdicts/<id>.md` |
-| Gate 3 | `/ship` | `simplifier`, `teacher` | PR + decision record |
+| Gate 3 | `/ship` | `simplifier`, `teacher` | PR + decision record; status → TO DEPLOY |
+| post-merge | `/land` | — | Checkout main, mark DONE, clean worktree/branch, write handoff |
 
 ## Install
 
@@ -69,7 +70,10 @@ Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (
 Re-enters TDD from a verifier block. Reads `ai/verdicts/<id>.md`, addresses each listed failure with a targeted failing test then implementation, and re-runs the full suite to confirm no regressions. Does not change status — run `/verify` again when done.
 
 ### `/ship` — Gate 3
-Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`. After human PR approval, sets status DONE.
+Runs `simplifier` subagent (no behaviour change) → moves to TO DEPLOY. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all seven required properties including the `Project` relation). Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`.
+
+### `/land` — post-merge
+Run after the PR is approved and merged. Checks out main, pulls, sets status DONE in both Notion and `ai/feature_list.json`, removes the slice worktree and branch (with confirmation), writes a handoff via the `handoff` skill, and prompts `/clear` for a clean next session.
 
 ## Subagents
 
@@ -162,4 +166,4 @@ Status values are case-sensitive. Both the Notion ticket and `ai/feature_list.js
 | `DOING` | `/plan` | Gate 2 passed, worktree created |
 | `TO REVIEW` | `/verify` | Verifier returned `pass` |
 | `TO DEPLOY` | `/ship` | Simplifier attested no behaviour change |
-| `DONE` | `/ship` | PR merged, human approved |
+| `DONE` | `/land` | PR merged, main pulled, worktree cleaned |
