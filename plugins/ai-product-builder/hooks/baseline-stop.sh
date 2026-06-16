@@ -3,10 +3,16 @@
 # active slice has an unresolved verifier block.
 # Exit 0 = allow session close. Exit 2 = block with message.
 
-# 1. Baseline check
+# 1. Baseline check (timeout 30s — keep ai/init.sh fast)
 if [ -f ai/init.sh ]; then
-    if ! output=$(bash ai/init.sh 2>&1); then
-        printf 'STOP: baseline failed — fix before closing session.\n\n%s\n' "$output"
+    output=$(timeout 30 bash ai/init.sh 2>&1)
+    exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        if [ $exit_code -eq 124 ]; then
+            printf 'STOP: baseline timed out after 30s — ai/init.sh must complete in under 10s.\nMove slow commands (test suites) to /verify.\n'
+        else
+            printf 'STOP: baseline failed — fix before closing session.\n\n%s\n' "$output"
+        fi
         exit 2
     fi
 fi
