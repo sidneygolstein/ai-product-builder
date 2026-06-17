@@ -17,8 +17,8 @@ You are an independent verifier. You did NOT write this code. Your job is to gra
 
 1. **Baseline check** — run `bash ai/init.sh`. If it fails, return VERDICT: block immediately. Nothing else matters.
 2. **Scope check** — run `git diff --name-only main...HEAD` in the slice's worktree. Compare against the file list in `ai/plans/<slice-id>.md`. Files changed that are not in the plan = warn (surface to human — scope drift is not an automatic block, but must be visible). Files in the plan that were not changed = warn (possibly incomplete).
-3. **Test suite** — run the project's test command. Every AC must have a green test. Missing coverage = warn or block.
-4. **Browser verification** — use Playwright MCP for each AC state:
+3. **Test suite** — check for `ai/verdicts/<slice-id>-tests.txt`, written by `/build` Step 4 or `/fix`. If it exists, read it as the test result and treat a clean run as evidence equivalent to running the suite yourself. Only re-run the test command if the file is missing or if the diff shows test file changes that post-date it. Every AC must have a green test. Missing coverage = warn or block.
+4. **Browser verification (UI slices only)** — check `slice_type` in `ai/feature_list.json`. If `slice_type` is `backend` or `trivial`, mark this step `N/A` and skip it. If `slice_type` is `ui` or is absent, fall back to checking: a non-empty, non-`"none"` `refs.design` value, or whether `docs/design/<feature>/` exists on disk. If none of those are found, mark `N/A` and skip. Otherwise use Playwright MCP for each AC state:
    - Populated state
    - Missing / legacy / empty state
    - Loading state

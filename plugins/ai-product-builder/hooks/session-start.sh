@@ -19,13 +19,18 @@ if [ -f ai/progress.md ]; then
     printf '======================\n'
 fi
 
-# 3. Run baseline (never blocks — informational only at session start)
+# 3. Run baseline (30s timeout — informational only at session start)
 if [ -f ai/init.sh ]; then
-    printf '\n[baseline] Running ai/init.sh...\n'
-    if bash ai/init.sh 2>&1; then
+    printf '\n[baseline] Running ai/init.sh (30s timeout)...\n'
+    if timeout 30 bash ai/init.sh 2>&1; then
         printf '[baseline] Passed.\n'
     else
-        printf '[baseline] FAILED — fix before closing this session.\n'
+        _ec=$?
+        if [ "$_ec" -eq 124 ]; then
+            printf '[baseline] Timed out (>30s) — run manually: bash ai/init.sh\n'
+        else
+            printf '[baseline] FAILED — fix before closing this session.\n'
+        fi
     fi
 fi
 

@@ -96,16 +96,15 @@ Every status change — by any command or agent — must follow this exact seque
 
 ```
 BEFORE transitioning:
-  1. Read ai/config/notion.json — get notion_page_id for the slice from ai/feature_list.json
+  1. Read ai/config/notion.json for ticket_db_id and project_id. If you already read it
+     earlier in this session, reuse the cached value — do not re-fetch.
+     Get notion_page_id for the slice from ai/feature_list.json.
   2. Confirm the slice's current status matches the expected "from" status (never skip forward)
 
 TO TRANSITION:
   3. Call mcp__notion__notion-update-page with the slice's notion_page_id and new Status value
   4. On success → update the slice's "status" field in ai/feature_list.json
   5. On any failure at step 4 → write ai/decisions/divergence-<timestamp>.md, report, stop
-
-AFTER:
-  6. Confirm both Notion and ai/feature_list.json now show the same status
 ```
 
 The write order (Notion first, local second) is intentional: Notion is the system of record. If local write fails, the divergence file preserves what happened. Never reverse the order.
@@ -127,6 +126,7 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
   "feature": "<slug — matches Notion ticket Feature property, e.g. 'user-search'>",
   "title": "Short imperative description",
   "status": "TO DO",
+  "slice_type": "ui | backend | trivial",
   "notion_page_id": "<Notion page UUID>",
   "branch": "feature/<feature>-F6.1",
   "worktree": ".worktrees/F6.1",

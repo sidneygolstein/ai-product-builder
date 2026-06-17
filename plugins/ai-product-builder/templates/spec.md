@@ -17,6 +17,7 @@
 ### <F<n>.1> — <slice title>
 
 **Status:** TO SPEC REVIEW
+**Slice Type:** ui | backend | trivial
 **Branch:** feature/<slug>-F<n>.1
 **Independent:** yes | no — depends on <other slice>
 

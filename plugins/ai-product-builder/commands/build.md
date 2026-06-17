@@ -1,25 +1,27 @@
 ---
 description: TDD implementation via context-preloaded subagents per slice. Use after /plan is approved. Main session gathers context first, then dispatches subagents with a full brief — parallel for independent tasks, sequential for dependent ones.
-requires: superpowers plugin (superpowers:dispatching-parallel-agents). For UI slices: frontend-design skill. If not found, apply TDD discipline directly: write failing tests, then implement until green.
+requires: For UI slices: frontend-design skill. If not found, apply TDD discipline directly — write failing tests, then implement until green.
 ---
-/superpowers:dispatching-parallel-agents
 
 **Step 1 — Gather context (main session, before any dispatch)**
-Read: `ai/plans/<id>.md`, every file listed under "files to add/change", existing test files for
-the slice, `docs/design/<feature>/` if a UI handoff exists. Do this now, in the main session,
-before dispatching anything.
+Read: `ai/plans/<id>.md`, every file path listed under "files to add/change" (read paths into
+context, do not paste), existing test files for the slice, `docs/design/<feature>/` if a UI
+handoff exists. Do this now, in the main session, before dispatching anything.
 
 **Step 2 — Classify tasks**
 From the plan, list every task or AC. Label each:
 - **INDEPENDENT** — touches files no other task touches; introduces no types, interfaces, or
   modules that another task depends on.
-- **DEPENDENT** — task B uses code task A creates, or both modify the same file.
+- **DEPENDENT** — task B concretely uses code, types, or modules that task A must produce first,
+  or both tasks modify the same file.
 
-When in doubt, mark DEPENDENT. Never dispatch two DEPENDENT tasks in parallel.
+When in doubt, mark INDEPENDENT — only mark DEPENDENT when the dependency is concrete and
+unavoidable. Never dispatch two DEPENDENT tasks in parallel.
 
 **Step 3 — Dispatch**
-For each **INDEPENDENT** group: dispatch subagents in parallel. Each agent gets a self-contained
-brief with: (a) the relevant plan section, (b) the exact files to touch (paste content),
+For each **INDEPENDENT** group: dispatch subagents in parallel (multiple Agent calls in the same
+response). Each agent gets a self-contained brief with: (a) the relevant plan section,
+(b) the paths of files to touch (the subagent reads them — do not paste content),
 (c) the failing tests to write first, (d) constraint: "do NOT touch files outside your scope,
 do NOT change status."
 
@@ -27,12 +29,15 @@ For each **DEPENDENT** chain: dispatch subagents strictly sequentially. Wait for
 before dispatching the next. Pass the previous agent's output as additional context to the next.
 
 Each subagent follows TDD: write the failing test first, run it to confirm it fails, implement
-until green, run the full suite to confirm no regression. If a design handoff exists at
+until green, then run only the tests for files in their scope to confirm no regression within
+that scope. The full-suite confirmation happens at Step 4. If a design handoff exists at
 `docs/design/<feature>/`, build UI with the frontend-design skill to match it.
 
 **Step 4 — Integrate**
-When all agents return: run the full test suite once across the entire worktree. If anything
-is red, investigate conflicts between agents before re-dispatching.
+When all agents return: run the full test suite once across the entire worktree. Save the output
+to `ai/verdicts/<id>-tests.txt` (create `ai/verdicts/` if needed) — the verifier reads this
+to avoid re-running the suite. If anything is red, investigate conflicts between agents before
+re-dispatching.
 
 **Simplicity ladder** — before writing any implementation code, stop at the first rung that holds:
 1. Does this need to exist at all? Speculative need = skip it. (YAGNI)

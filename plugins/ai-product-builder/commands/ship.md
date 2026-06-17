@@ -1,7 +1,11 @@
 ---
 description: Gate 3 — simplify + PR + decision record. Use after /verify passes to clean up, open the PR, link the Notion ticket, and write the decision record.
 ---
-Run the simplifier subagent (no behaviour change).
+Check `slice_type` in `ai/feature_list.json` for the slice being shipped.
+
+If `slice_type` is `trivial`: skip the simplifier entirely — proceed directly to the PR step below. Trivial slices are too small to justify the simplifier overhead.
+
+Otherwise: run the simplifier subagent (no behaviour change).
 
 Check the simplifier's output before continuing:
 - ATTESTATION: no behaviour change → proceed to PR
