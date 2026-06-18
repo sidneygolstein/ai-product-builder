@@ -11,6 +11,6 @@ These rules apply in any project that uses the `ai-product-builder` plugin.
 - Ticket `Type` (Notion property) is one of: `Feature` · `Bug` · `Tech` · `Discovery`.
 - `technical_shape` — set in Notion as the `Technical Shape` property at ticket creation, mirrored into `ai/feature_list.json`; determines which gates run:
   - `ui`: full pipeline including spec-reviewer subagent and simplifier.
-  - `backend`: full pipeline except simplifier.
+  - `backend`: full pipeline including spec-reviewer subagent and simplifier (no design handoff required).
   - `trivial`: review inline (no spec-reviewer subagent), skip simplifier.
 - Status writes: always update Notion first, then `ai/feature_list.json`. On local write failure, log to `ai/decisions/divergence-<timestamp>.md` and stop — do not retry blindly.

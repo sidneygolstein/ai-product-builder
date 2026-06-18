@@ -1,4 +1,4 @@
-# ai-product-builder — v2.0.0
+# ai-product-builder — v2.1.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -19,7 +19,7 @@ Each stage is a slash command. Each gate requires explicit human approval before
 | 1 | `/brainstorm` | — | PRD in `docs/brainstorms/` |
 | 2 | `/design` | — | Brief + handoff in `docs/design/` (optional — skip for backend-only) |
 | 3 | `/tickets` | — | Notion tickets + `ai/feature_list.json` with `technical_shape` |
-| Gate 1 | `/spec-review` | `spec-reviewer` (ui/backend) or inline (trivial) | GO/NO-GO per ticket; applies edits |
+| Gate 1 | `/spec-review` | `spec-reviewer` (ui/backend) or inline (trivial) | pass/block per ticket; applies edits |
 | Gate 2 | `/plan` | — | Human-approved plan written to `ai/plans/<id>.md`; worktree created |
 | 5 | `/build` | — | TDD: failing tests first, then green; saves suite output to `ai/verdicts/<id>-tests.txt` |
 | Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
@@ -34,8 +34,8 @@ Each ticket carries a Notion `Type` (`Feature` · `Bug` · `Tech` · `Discovery`
 | Technical Shape | Description | Gates skipped |
 |---|---|---|
 | `ui` | Has a design handoff or modifies UI components/pages | None — full pipeline |
-| `backend` | Only touches API, service, DB, config, or infra layers | Browser verification |
-| `trivial` | Small contained change: no new files, no logic change, ~50 lines max | `spec-reviewer` subagent, simplifier subagent, browser verification |
+| `backend` | Only touches API, service, DB, config, or infra layers | None — full pipeline (no design handoff required) |
+| `trivial` | Small contained change: no new files, no logic change, ~50 lines max | `spec-reviewer` subagent, simplifier subagent |
 
 ## Install
 
@@ -72,7 +72,7 @@ Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enume
 TDD implementation via context-preloaded subagents. Main session gathers all context first (plan, source file paths, test files, design handoff), then classifies tasks as INDEPENDENT or DEPENDENT — defaulting to INDEPENDENT; only marking DEPENDENT when task B concretely uses code or types that task A must produce first. Independent tasks are dispatched in parallel (multiple agents in one response); dependent chains run strictly sequentially. Each subagent receives file paths (not pasted content) and runs TDD: failing test first, implement until green, then scope-only tests to confirm local correctness. Full suite runs once at integrate, and output is saved to `ai/verdicts/<id>-tests.txt` for the verifier to read. Does not mark the ticket complete — the verifier decides.
 
 ### `/next`
-Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO DO → TO SPEC REVIEW → none), and prints the single highest-priority ticket with the exact command to run. Use at session start when unsure what to work on.
+Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO SPEC REVIEW → TO DO → none), and prints the single highest-priority ticket with the exact command to run. Use at session start when unsure what to work on.
 
 ### `/verify` — Gate 3 prep
 Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), then checks browser verification and every `definition_of_done` item. Browser verification uses Playwright MCP and is skipped (`N/A`) for `backend` and `trivial` tickets. Outputs `VERDICT: pass | warn | block` with evidence.
