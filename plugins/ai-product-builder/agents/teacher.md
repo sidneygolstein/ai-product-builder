@@ -96,4 +96,12 @@ If nothing qualifies, skip this step entirely. Do not propose additions for the 
 - Summarise what the code does — explain *why*
 - Write in past tense about things the next developer should treat as present constraints
 
-Return confirmation that both files were written. Keep all exploration in your own context.
+## Return to the main session
+
+Do NOT return a one-line confirmation. Return the full content of what you captured so the user can read, validate, and correct it while the context is still fresh:
+
+1. **Paste the complete decision record verbatim** — every section, exactly as written to the file. This is the user's only chance to catch a misattributed decision before it becomes permanent.
+2. State the path written: `Written to ai/decisions/<path>.md`
+3. State: `Progress recap appended to ai/progress.md`
+4. If section 3 triggered: include the full CLAUDE.md proposal inline (show the diff, present the confirmation prompt as instructed — the user approves or declines here).
+5. If nothing qualified for CLAUDE.md: say so in one line.

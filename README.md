@@ -1,4 +1,4 @@
-# ai-product-builder — v1.12.3
+# ai-product-builder — v1.13.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -24,8 +24,8 @@ Each stage is a slash command. Each gate requires explicit human approval before
 | 5 | `/build` | — | TDD: failing tests first, then green; saves suite output to `ai/verdicts/<id>-tests.txt` |
 | Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
 | on block | `/fix <id>` | — | Re-enter TDD from verifier failures in `ai/verdicts/<id>.md` |
-| Gate 3 | `/ship` | `simplifier` (ui/backend only), `teacher` | PR + decision record; status → TO DEPLOY |
-| post-merge | `/land` | — | Checkout main, mark DONE, clean worktree/branch, write handoff |
+| Gate 3 | `/ship` | `simplifier` (ui/backend only), `teacher` | PR + decision record shown inline to user; status → TO DEPLOY |
+| post-merge | `/land` | `librarian` (final slice of feature only) | Checkout main, mark DONE, clean up, sync CLAUDE.md, write handoff |
 
 ## Slice types
 
@@ -88,10 +88,14 @@ Route depends on `slice_type`:
 - **`ui` / `backend`:** runs `simplifier` subagent (no behaviour change) before opening the PR.
 - **`trivial`:** skips the simplifier — proceeds directly to PR.
 
-Updates status to TO DEPLOY in Notion then `ai/feature_list.json`. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all seven required properties including the `Project` relation). Runs `teacher` subagent to write `ai/decisions/<feature>-<slice-id>-<slug>.md` and append a recap to `ai/progress.md`. On PR approval, updates status to DONE in Notion then `ai/feature_list.json`.
+Updates status to TO DEPLOY in Notion then `ai/feature_list.json`. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all seven required properties including the `Project` relation). Runs `teacher` subagent which **returns the full decision record inline** — the user reads, validates, and corrects the captured reasoning before the session closes. The teacher writes `ai/decisions/<feature>-<slice-id>-<slug>.md`, appends a recap to `ai/progress.md`, and conditionally proposes CLAUDE.md additions for the user to approve. On PR approval, updates status to DONE in Notion then `ai/feature_list.json`.
 
 ### `/land` — post-merge
-Run after the PR is approved and merged. Checks out main, pulls, sets status DONE in both Notion and `ai/feature_list.json`, removes the slice worktree and branch (with confirmation), writes a handoff via the `handoff` skill, and prompts `/clear` for a clean next session.
+Run after the PR is approved and merged. Checks out main, pulls, sets status DONE in both Notion and `ai/feature_list.json`, removes the slice worktree and branch (with confirmation).
+
+**Final-slice sync (static docs):** if all sibling slices for the feature are now DONE, runs the `librarian` subagent. The librarian reads the full ADR corpus (`ai/decisions/<feature>-*.md`) for the feature, identifies conventions that emerged across multiple slices, and proposes promotions into the nearest CLAUDE.md files — one gated diff at a time. Architecture/API docs that look stale are flagged in the handoff but never auto-edited. Skipped for trivial slices and for any `/land` that is not the final one for its feature.
+
+Writes a handoff via the `handoff` skill (including any stale-doc flags from the librarian) and prompts `/clear` for a clean next session.
 
 ## Subagents
 
@@ -100,7 +104,8 @@ Run after the PR is approved and merged. Checks out main, pulls, sets status DON
 | `spec-reviewer` | Gate 1 — after `/tickets` (ui/backend only) | Did not author the tickets or specs | `Read`, `mcp__notion` |
 | `verifier` | Gate 3-prep — after `/build` | Did not write the code | `Read`, `Bash`, `mcp__playwright` |
 | `simplifier` | Inside `/ship` — before PR (ui/backend only) | Cannot fix bugs or change scope | `Read`, `Edit` |
-| `teacher` | Inside `/ship` — after merge | Writes history, not code | `Read`, `Edit`, `mcp__notion` |
+| `teacher` | Inside `/ship` — after merge | Writes history, not code; **returns full decision record inline to the user** | `Read`, `Edit`, `mcp__notion` |
+| `librarian` | Inside `/land` — final slice of a feature only | Reads ADR corpus, not code | `Read`, `Edit`, `Bash` |
 
 Verifier pass is enforced by convention at Gate 3 — `/ship` will not proceed without one. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.
 
