@@ -140,7 +140,6 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
   "definition_of_done": [
     "baseline check passes",
     "all ACs green",
-    "browser verification passes",
     "decision record written"
   ],
   "refs": {

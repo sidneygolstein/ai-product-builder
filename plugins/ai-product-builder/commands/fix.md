@@ -6,14 +6,23 @@ VERDICT: block output before continuing.
 
 Confirm the worktree for ticket `<id>` is at `.worktrees/<id>` and the branch is checked out.
 
-For each failure listed under "Failures to fix":
-  1. Write or extend a failing test that exactly captures the failure. Run it — confirm it fails.
-  2. Fix the implementation until the test is green.
-  3. Run the tests for the files you changed to confirm no regression within your scope.
+**Classify failures**
+From the "Failures to fix" list, label each failure:
+- **INDEPENDENT** — touches files no other failure touches; no shared types or modules.
+- **DEPENDENT** — failure B requires the fix from failure A to be in place first, or both touch the same file.
 
-After all listed failures are addressed, run the full test suite once to confirm no cross-ticket
-regression. Save the output to `ai/verdicts/<id>-tests.txt` (overwrite if it exists). If anything
-is red, fix it before proceeding.
+**Dispatch**
+For **INDEPENDENT** failures: dispatch in parallel as subagents (multiple Agent calls in the same
+response). Each subagent gets: (a) the single failure description, (b) the paths of files to touch,
+(c) instruction to write/extend the failing test first, confirm it fails, then fix until green,
+then run only that specific test file. Use `claude-haiku-4-5-20251001` as the model.
+
+For **DEPENDENT** failures: fix sequentially in the main session or as sequential subagents.
+
+**Integrate**
+After all fixes return: run the full test suite once. Save the output to
+`ai/verdicts/<id>-tests.txt` (overwrite if it exists). If anything is red, fix it before
+proceeding.
 
 Constraints:
   - Do NOT fix anything outside the listed failures. Scope is the verifier's list, not the diff.

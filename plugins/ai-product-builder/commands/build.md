@@ -3,6 +3,18 @@ description: TDD implementation via context-preloaded subagents per ticket. Use 
 requires: For UI tickets: frontend-design skill. If not found, apply TDD discipline directly — write failing tests, then implement until green.
 ---
 
+**Step 0 — Check technical_shape**
+Read `ai/feature_list.json`. Find the active ticket (status `DOING`).
+
+If `technical_shape` is `trivial`:
+  Skip Steps 1–4. Implement inline in the main session:
+  1. Write the failing test first. Run it to confirm it fails.
+  2. Implement the minimum code to make it pass.
+  3. Run the full test suite. Save output to `ai/verdicts/<id>-tests.txt` (create `ai/verdicts/` if needed).
+  4. Do NOT mark complete or change status — the verifier decides.
+
+If `technical_shape` is `ui` or `backend`: proceed to Step 1.
+
 **Step 1 — Gather context (main session, before any dispatch)**
 Read: `ai/plans/<id>.md`, every file path listed under "files to add/change" (read paths into
 context, do not paste), existing test files for the ticket, `docs/design/<feature>/` if a UI
@@ -29,9 +41,13 @@ For each **DEPENDENT** chain: dispatch subagents strictly sequentially. Wait for
 before dispatching the next. Pass the previous agent's output as additional context to the next.
 
 Each subagent follows TDD: write the failing test first, run it to confirm it fails, implement
-until green, then run only the tests for files in their scope to confirm no regression within
-that scope. The full-suite confirmation happens at Step 4. If a design handoff exists at
+until green, then run only the specific test file(s) the agent just wrote — not the full scope
+suite. The full-suite confirmation happens once at Step 4. If a design handoff exists at
 `docs/design/<feature>/`, build UI with the frontend-design skill to match it.
+
+Use `claude-haiku-4-5-20251001` as the model for each dispatched subagent. TDD implementation
+against a defined spec is structured enough for Haiku; the full suite at Step 4 validates
+correctness regardless of model.
 
 **Step 4 — Integrate**
 When all agents return: run the full test suite once across the entire worktree. Save the output

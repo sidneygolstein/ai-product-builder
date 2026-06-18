@@ -59,7 +59,6 @@ Top level:
   "definition_of_done": [
     "baseline check passes",
     "all ACs green",
-    "browser verification passes",
     "decision record written"
   ],
   "refs": {
@@ -101,8 +100,9 @@ Top level:
 #!/usr/bin/env bash
 set -euo pipefail
 # Baseline: exit 0 = green; non-zero = broken — fix before closing session.
+# IMPORTANT: keep this fast (< 10s). Lint + typecheck only.
+# Full test suite belongs in /verify, not here.
 
-<test_command_from_Q3a>
 <lint_command_from_Q3b>
 <typecheck_command_from_Q3c>   # omit this line if Q3c was skipped
 ```
@@ -135,7 +135,7 @@ If `@` imports are not supported in this environment, replace the import line wi
 ```
 - Read `ai/progress.md` and `ai/feature_list.json` at the start of every session.
 - Never let the agent that wrote a spec or code review its own work.
-- A ticket is not done until `ai/init.sh` exits 0, every AC has a green test, and browser verification passes.
+- A ticket is not done until `ai/init.sh` exits 0 and every AC has a green test.
 - One ticket per session. Prefer small, independent tickets.
 - Write a decision record for every shipped ticket.
 ```

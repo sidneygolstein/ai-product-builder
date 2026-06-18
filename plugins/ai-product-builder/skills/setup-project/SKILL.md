@@ -66,9 +66,11 @@ Record as `<backlog_key>`.
 **Q2b. Create or update this project's row in the Projects database? (Y/n)**
 If yes → Step 7 will upsert. If no → Step 7 is skipped.
 
-**Q3a. Test command?**
+**Q3a. Full test command? (optional)**
 Auto-detect: look for `"test"` in `package.json` scripts, `pytest`, `go test ./...`,
 `cargo test`, `bundle exec rspec`, etc. Show: "I detected: `<cmd>`. Correct?" Wait.
+Stored in the Projects database row only — NOT written to `ai/init.sh`. The full test suite
+belongs in `/verify`, not in the baseline. Press Enter to skip.
 
 **Q3b. Lint command?**
 Auto-detect: `eslint`, `ruff check .`, `golangci-lint run`, `cargo clippy`, etc.
@@ -77,7 +79,8 @@ Same confirm pattern. Press Enter to skip.
 **Q3c. Typecheck command? (optional)**
 Auto-detect: `tsc --noEmit`, `mypy .`, `pyright`, etc. Press Enter to skip.
 
-These three become `ai/init.sh` (see template in `references/file-templates.md`).
+Q3b and Q3c compose `ai/init.sh` (see template in `references/file-templates.md`).
+Keep it fast (< 10s) — lint + typecheck only.
 
 **Q4a. Default branch?**
 Auto-detect: `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's|refs/remotes/origin/||'`.
@@ -197,7 +200,7 @@ Show every file's full content as a group — one fenced code block per file wit
 | `ai/decisions/.gitkeep` | Keeps the ADR directory tracked in git. |
 | `ai/plans/.gitkeep` | Keeps the plans directory tracked in git. Written to by `/plan` after approval. |
 | `ai/verdicts/.gitkeep` | Keeps the verdicts directory tracked in git. Written to by `verifier` on block. |
-| `ai/init.sh` | Q3a–Q3c composed under `set -euo pipefail`. Then `chmod +x ai/init.sh`. |
+| `ai/init.sh` | Q3b–Q3c composed under `set -euo pipefail` (lint + typecheck only — Q3a is not included; `/verify` owns the full test suite). Then `chmod +x ai/init.sh`. |
 
 Exact templates: `references/file-templates.md`.
 
@@ -247,7 +250,7 @@ Properties to set:
 |----------|-------|
 | Name | `<project name>` |
 | Harness status | `v2 full` |
-| Baseline command | Q3a + Q3b + Q3c joined with ` && ` |
+| Baseline command | Q3a (test) + Q3b (lint) + Q3c (typecheck) joined with ` && ` — full suite for the record |
 | Tech stack | detected stack |
 | Default branch | Q4a |
 | Feature flag pattern | Q4b |

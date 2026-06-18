@@ -41,13 +41,11 @@ case "$ext" in
     ts|tsx|js|jsx|mjs|cjs)
         command -v npx &>/dev/null && {
             npx --no-install prettier --write "$file_path" 2>/dev/null || true
-            npx --no-install eslint --fix "$file_path" 2>/dev/null || true
         }
         ;;
     py)
         command -v ruff &>/dev/null && {
             ruff format "$file_path" 2>/dev/null || true
-            ruff check --fix "$file_path" 2>/dev/null || true
         }
         ;;
     go)

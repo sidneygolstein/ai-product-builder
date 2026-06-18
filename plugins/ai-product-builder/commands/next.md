@@ -9,11 +9,11 @@ Read ai/feature_list.json. Apply this priority order and return the FIRST match:
      - If no: Command: `/build` (if tests aren't all green yet) or `/verify <id>` (if build looks complete)
    → Also print: worktree path, branch
 
-2. Oldest ticket with status `TO DO`
-   → Command: `/plan <id>`
-
-3. Any ticket with status `TO SPEC REVIEW`
+2. Any ticket with status `TO SPEC REVIEW`
    → Command: `/spec-review`
+
+3. Oldest ticket with status `TO DO`
+   → Command: `/plan <id>`
 
 4. No tickets exist or all are DONE
    → Command: `/brainstorm` or `/tickets`
