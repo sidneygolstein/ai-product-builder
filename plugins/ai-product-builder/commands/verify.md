@@ -1,8 +1,8 @@
 ---
-description: Independent verification via verifier subagent. Use after /build. Runs baseline, tests, and browser verification against the slice definition_of_done.
+description: Independent verification via verifier subagent. Use after /build. Runs baseline, tests, and browser verification against the ticket definition_of_done.
 ---
 Use the verifier subagent (did not write this code). Run ai/init.sh baseline check; run all
-tests; run browser verification (Playwright MCP) for each AC state. Grade against the slice's
+tests; run browser verification (Playwright MCP) for each AC state. Grade against the ticket's
 definition_of_done.
 
 Verdicts:

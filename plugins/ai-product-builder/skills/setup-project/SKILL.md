@@ -3,7 +3,7 @@ name: setup-project
 description: >-
   Interactive bootstrapper that wires any repo to the AI Product Builder v2 harness. Run
   once per project — or re-run to reconcile. Interviews the user one question at a time,
-  resolves Notion IDs, imports non-DONE tickets as slices, writes ai/feature_list.json +
+  resolves Notion IDs, imports non-DONE tickets, writes ai/feature_list.json +
   ai/init.sh + CLAUDE.md + hooks, and registers the project in the Projects database.
   Triggers on: "set up this project", "bootstrap this repo", "migrate to v2",
   "initialize harness", "get this repo ready for the pipeline", or any request to
@@ -14,7 +14,7 @@ description: >-
 
 Bootstrap or migrate any repo to the AI Product Builder v2 harness in one guided session.
 
-End state: every session opens with full context from `ai/progress.md`, every slice is
+End state: every session opens with full context from `ai/progress.md`, every ticket is
 tracked in `ai/feature_list.json`, quality gates are enforced by hooks, and the project is
 registered in the Projects database.
 
@@ -103,7 +103,7 @@ Run: `find . -not -path './.git/*' -not -name '.*' -type f | head -20`
 
 **Repo is empty / greenfield** (no source files):
 1. Continue through Steps 3 and 5–7 (IDs, CLAUDE.md, hooks, Projects DB row).
-2. Write `ai/feature_list.json` with an empty `slices` array.
+2. Write `ai/feature_list.json` with an empty `tickets` array.
 3. Skip Step 4 (no tickets yet).
 4. After Step 8, print:
    ```
@@ -142,8 +142,12 @@ mcp__notion__notion-query-database-view
   filter:   Project = <backlog_key> AND Status != DONE
 ```
 
-For each ticket, build a slice. See `references/file-templates.md → Slice schema` for
+For each ticket, build a ticket entry. See `references/file-templates.md → Ticket schema` for
 the full shape.
+
+When importing each ticket:
+- **Capture the Notion page UUID** from the query result and write it as `notion_page_id`. This UUID is required by every downstream status update — if it is missing, status transitions will fail.
+- **Read `Technical Shape`** from the Notion ticket and write it as `"technical_shape"`. If `Technical Shape` is not set on the Notion ticket (older tickets), default to `"backend"`.
 
 **Branch slug formula:**
 1. Use the ticket's `Feature` text property: lowercase, spaces → dashes.
@@ -156,7 +160,7 @@ Show a summary table before proceeding:
 | id | title | status | branch |
 |----|-------|--------|--------|
 
-Ask: "Import these N slices? (yes / skip <ids>)"
+Ask: "Import these N tickets? (yes / skip <ids>)"
 
 ---
 
@@ -176,7 +180,7 @@ Resolution:
 - **Local only** (not in Notion): keep but flag with `[!] not in Notion`; ask whether to
   remove.
 
-Write the reconciled `slices` array back into `ai/feature_list.json`.
+Write the reconciled `tickets` array back into `ai/feature_list.json`.
 
 ---
 
@@ -188,7 +192,7 @@ Show every file's full content as a group — one fenced code block per file wit
 | File | Notes |
 |------|-------|
 | `ai/config/notion.json` | Schema in `references/file-templates.md`. Use `""` for unknown fields — never omit. |
-| `ai/feature_list.json` | Slices from Step 4a/4b; empty `[]` for greenfield. |
+| `ai/feature_list.json` | Tickets from Step 4a/4b; empty `[]` for greenfield. |
 | `ai/progress.md` | Use `$(date +%Y-%m-%d)` for the date — not the model's clock. |
 | `ai/decisions/.gitkeep` | Keeps the ADR directory tracked in git. |
 | `ai/plans/.gitkeep` | Keeps the plans directory tracked in git. Written to by `/plan` after approval. |
@@ -269,8 +273,8 @@ Run `bash ai/init.sh` and capture output.
 
 - **Exit 0**: print "Baseline passed."
 - **Non-zero**: print the output and say: "Baseline failed. This is expected for a new
-  repo with no tests yet. The Stop hook will enforce it once tests are green. Fix the
-  command in ai/init.sh if it is wrong." Do not block setup completion.
+  repo with no tests yet. Fix the command in `ai/init.sh` if it is wrong, then run
+  `bash ai/init.sh` to confirm." Do not block setup completion.
 
 ---
 
@@ -281,7 +285,7 @@ Setup complete — <project name>
 
 Files written:
   ai/config/notion.json    Notion IDs for notion-board skill
-  ai/feature_list.json     <N> slices
+  ai/feature_list.json     <N> tickets
   ai/progress.md           project state snapshot
   ai/init.sh               baseline: <test> && <lint> [&& <typecheck>]
   ai/decisions/.gitkeep    ADR directory (git-tracked)
@@ -312,7 +316,7 @@ Next:
 - **Never write hooks to project settings.json.** The plugin's `hooks.json` handles all hooks via `CLAUDE_PLUGIN_ROOT`. Writing duplicate paths into a project-level file breaks on plugin updates. Remove existing ai-product-builder hook blocks if found.
 - **One confirmation round for local files.** Show Step 5 files as a group; one "yes".
 - **Reconcile on re-run.** If `ai/feature_list.json` exists, diff first — never blindly
-  overwrite slice statuses.
+  overwrite ticket statuses.
 - **Bidirectional sync is Notion → local by default.** Pushing local → Notion requires
   showing a diff and a separate explicit confirmation.
 - **Abort at any step.** If the user says "stop", "cancel", or "abort": stop immediately,

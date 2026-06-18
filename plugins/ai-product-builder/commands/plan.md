@@ -1,7 +1,7 @@
 ---
-description: Gate 2 — plan + isolated worktree per slice. Use after /spec-review is approved. Produces a human-approved plan before any code is written.
+description: Gate 2 — plan + isolated worktree per ticket. Use after /spec-review is approved. Produces a human-approved plan before any code is written.
 ---
-Take slice <id> from ai/feature_list.json (Project=<project>). Create an isolated git worktree
+Take ticket <id> from ai/feature_list.json (Project=<project>). Create an isolated git worktree
 at .worktrees/<id> on branch feature/<feature>-<id> from up-to-date main. Update status to
 DOING — Notion first (notion-board skill), then ai/feature_list.json.
 Plan: reuse existing <service/module> + design system; implement on `<path>` to match

@@ -1,25 +1,27 @@
 ---
-description: Show the single highest-priority slice and the exact command to run next. Use at session start or when unsure what to work on. Read-only — does not start any work.
+description: Show the single highest-priority ticket and the exact command to run next. Use at session start or when unsure what to work on. Read-only — does not start any work.
 ---
 Read ai/feature_list.json. Apply this priority order and return the FIRST match:
 
-1. Any slice with status `DOING`
-   → Command: `/build` (if tests aren't all green yet) or `/verify <id>` (if build looks complete)
+1. Any ticket with status `DOING`
+   → Check if `ai/verdicts/<id>.md` exists and contains `VERDICT: block`
+     - If yes: Command: `/fix <id>`
+     - If no: Command: `/build` (if tests aren't all green yet) or `/verify <id>` (if build looks complete)
    → Also print: worktree path, branch
 
-2. Oldest slice with status `TO DO`
+2. Oldest ticket with status `TO DO`
    → Command: `/plan <id>`
 
-3. Any slice with status `TO SPEC REVIEW`
+3. Any ticket with status `TO SPEC REVIEW`
    → Command: `/spec-review`
 
-4. No slices exist or all are DONE
+4. No tickets exist or all are DONE
    → Command: `/brainstorm` or `/tickets`
 
 Print exactly this block — nothing else, no preamble:
 
 ```
-Slice:   <id> — <title>
+Ticket:   <id> — <title>
 Status:  <status>
 Branch:  <branch>           (only if DOING)
 Worktree: <worktree>        (only if DOING)

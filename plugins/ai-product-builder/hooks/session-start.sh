@@ -6,8 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # 1. Scaffold ai/ if it does not exist
 if [ ! -d ai ]; then
     mkdir -p ai/config ai/decisions ai/plans ai/verdicts
-    printf '{"project": "", "slices": []}\n' > ai/feature_list.json
-    printf '# (project) — Progress\n\n**Last updated:** (not yet set)\n\n## Where things stand\nNot initialized — run /setup-project to complete setup.\n\n## Active slice\nnone\n\n## Next up\nrun /setup-project\n' > ai/progress.md
+    printf '{"project": "", "tickets": []}\n' > ai/feature_list.json
+    printf '# (project) — Progress\n\n**Last updated:** (not yet set)\n\n## Where things stand\nNot initialized — run /setup-project to complete setup.\n\n## Active ticket\nnone\n\n## Next up\nrun /setup-project\n' > ai/progress.md
     touch ai/decisions/.gitkeep
     printf '[ai-product-builder] ai/ scaffolded — run /setup-project to complete initialization.\n'
 fi
@@ -34,15 +34,15 @@ if [ -f ai/init.sh ]; then
     fi
 fi
 
-# 4. Surface active + next slice (requires jq; skips silently if unavailable)
+# 4. Surface active + next ticket (requires jq; skips silently if unavailable)
 if [ -f ai/feature_list.json ] && command -v jq &>/dev/null; then
-    active_id=$(jq -r '[.slices[] | select(.status == "DOING")] | first | .id // ""' ai/feature_list.json 2>/dev/null)
-    active_title=$(jq -r '[.slices[] | select(.status == "DOING")] | first | .title // ""' ai/feature_list.json 2>/dev/null)
-    next_id=$(jq -r '[.slices[] | select(.status == "TO DO")] | first | .id // ""' ai/feature_list.json 2>/dev/null)
-    next_title=$(jq -r '[.slices[] | select(.status == "TO DO")] | first | .title // ""' ai/feature_list.json 2>/dev/null)
-    review_count=$(jq '[.slices[] | select(.status == "TO SPEC REVIEW")] | length' ai/feature_list.json 2>/dev/null)
+    active_id=$(jq -r '[.tickets[] | select(.status == "DOING")] | first | .id // ""' ai/feature_list.json 2>/dev/null)
+    active_title=$(jq -r '[.tickets[] | select(.status == "DOING")] | first | .title // ""' ai/feature_list.json 2>/dev/null)
+    next_id=$(jq -r '[.tickets[] | select(.status == "TO DO")] | first | .id // ""' ai/feature_list.json 2>/dev/null)
+    next_title=$(jq -r '[.tickets[] | select(.status == "TO DO")] | first | .title // ""' ai/feature_list.json 2>/dev/null)
+    review_count=$(jq '[.tickets[] | select(.status == "TO SPEC REVIEW")] | length' ai/feature_list.json 2>/dev/null)
 
-    printf '\n── Slices ──────────────────────────────────────\n'
+    printf '\n── Tickets ─────────────────────────────────────\n'
     if [ -n "$active_id" ] && [ "$active_id" != "null" ] && [ "$active_id" != "" ]; then
         printf 'Active  [%s] %s\n' "$active_id" "$active_title"
         printf 'Run     /build or /verify %s\n' "$active_id"

@@ -1,9 +1,9 @@
 ---
-description: Optional — PRD → Claude Design handoff. Use between /brainstorm and /tickets for UI features. Skip for backend-only slices.
+description: Optional — PRD → Claude Design handoff. Use between /brainstorm and /tickets for UI features. Skip for backend-only tickets.
 ---
 # /design — PRD → design handoff
 #
-# OPTIONAL — skip for backend-only slices.
+# OPTIONAL — skip for backend-only tickets.
 # If the feature has no UI component, skip this command entirely and go straight to /tickets.
 #
 # This stage has three parts. Run (a) first, do (b) manually on the Claude Design surface,
@@ -35,5 +35,13 @@ back into docs/design/<feature>/ before running part (c).
 
 Read docs/design/<feature>/how-to-implement.md and the exported visuals. Summarize the chosen
 design, list every component/file it says to add or change, and confirm all four states are
-specified. Flag anything ambiguous BEFORE we ticket it. Record the handoff path in the feature's
-refs so /tickets and /plan reference it.
+specified. Flag anything ambiguous BEFORE we ticket it.
+
+Append a refs block to the PRD at `docs/brainstorms/prd-<feature>-*.md` (after the last line):
+
+```
+---
+design_handoff: docs/design/<feature>/how-to-implement.md
+```
+
+This allows `/tickets` to find the handoff path when building `feature_list.json` entries.

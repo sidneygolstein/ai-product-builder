@@ -34,11 +34,11 @@ Top level:
 ```json
 {
   "project": "<project name>",
-  "slices": []
+  "tickets": []
 }
 ```
 
-### Slice schema
+### Ticket schema
 
 ```json
 {
@@ -46,6 +46,7 @@ Top level:
   "feature": "<slug from Notion ticket Feature property — lowercase, dashes, e.g. 'user-search'>",
   "title": "<imperative description>",
   "status": "<exact Status value — case-sensitive, see notion-board skill>",
+  "technical_shape": "ui | backend | trivial",
   "notion_page_id": "<Notion page UUID of the ticket>",
   "branch": "feature/<slug>-<id>",
   "worktree": ".worktrees/<id>",
@@ -83,10 +84,10 @@ Top level:
 **Last updated:** <output of: date +%Y-%m-%d>
 
 ## Where things stand
-<One paragraph: N slices total, count per status, immediate next action.>
+<One paragraph: N tickets total, count per status, immediate next action.>
 
-## Active slice
-<ID and title of the DOING slice, or "none">
+## Active ticket
+<ID and title of the DOING ticket, or "none">
 
 ## Next up
 <ID and title of oldest TO DO — or "run /spec-review on oldest TO SPEC REVIEW" — or "run /brainstorm">
@@ -127,14 +128,14 @@ After writing: `chmod +x ai/init.sh`
 
 ## Commands
 - Baseline: `bash ai/init.sh`
-- Next slice: read ai/feature_list.json — pick oldest DOING; if none, oldest TO DO
+- Next ticket: read ai/feature_list.json — pick oldest DOING; if none, oldest TO DO
 ```
 
 If `@` imports are not supported in this environment, replace the import line with:
 ```
 - Read `ai/progress.md` and `ai/feature_list.json` at the start of every session.
 - Never let the agent that wrote a spec or code review its own work.
-- A slice is not done until `ai/init.sh` exits 0, every AC has a green test, and browser verification passes.
-- One slice per session. Prefer small, independent slices.
-- Write a decision record for every shipped slice.
+- A ticket is not done until `ai/init.sh` exits 0, every AC has a green test, and browser verification passes.
+- One ticket per session. Prefer small, independent tickets.
+- Write a decision record for every shipped ticket.
 ```

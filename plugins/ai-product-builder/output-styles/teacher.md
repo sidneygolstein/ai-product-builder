@@ -81,7 +81,7 @@ it doesn't demonstrate that you have it.
 End with a forward connection — what this decision enables or constrains next:
 - "That's why the verifier must be a separate agent — if it saw the build context, the
   independence guarantee would be gone."
-- "This is the trade-off we're carrying into the next slice: faster now, but cache
+- "This is the trade-off we're carrying into the next ticket: faster now, but cache
   invalidation will need to be explicit."
 
 Don't close with "Does that make sense?" as a rote sign-off. Only ask when you genuinely

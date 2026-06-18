@@ -1,11 +1,11 @@
 ---
-description: TDD implementation via context-preloaded subagents per slice. Use after /plan is approved. Main session gathers context first, then dispatches subagents with a full brief — parallel for independent tasks, sequential for dependent ones.
-requires: For UI slices: frontend-design skill. If not found, apply TDD discipline directly — write failing tests, then implement until green.
+description: TDD implementation via context-preloaded subagents per ticket. Use after /plan is approved. Main session gathers context first, then dispatches subagents with a full brief — parallel for independent tasks, sequential for dependent ones.
+requires: For UI tickets: frontend-design skill. If not found, apply TDD discipline directly — write failing tests, then implement until green.
 ---
 
 **Step 1 — Gather context (main session, before any dispatch)**
 Read: `ai/plans/<id>.md`, every file path listed under "files to add/change" (read paths into
-context, do not paste), existing test files for the slice, `docs/design/<feature>/` if a UI
+context, do not paste), existing test files for the ticket, `docs/design/<feature>/` if a UI
 handoff exists. Do this now, in the main session, before dispatching anything.
 
 **Step 2 — Classify tasks**

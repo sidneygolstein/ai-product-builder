@@ -12,16 +12,16 @@
 
 ---
 
-## Slices
+## Tickets
 
-### <F<n>.1> — <slice title>
+### <F<n>.1> — <ticket title>
 
 **Status:** TO SPEC REVIEW
-**Slice Type:** ui | backend | trivial
+**Technical Shape:** ui | backend | trivial
 **Branch:** feature/<slug>-F<n>.1
-**Independent:** yes | no — depends on <other slice>
+**Independent:** yes | no — depends on <other ticket>
 
-**Description:** <2–3 sentences: what this slice does, why it's independently shippable>
+**Description:** <2–3 sentences: what this ticket does, why it's independently shippable>
 
 **Acceptance Criteria:**
 - [ ] Populated state: <specific observable outcome>
@@ -41,4 +41,4 @@
 
 ---
 
-<!-- Repeat the slice block above for each additional slice -->
+<!-- Repeat the ticket block above for each additional ticket -->

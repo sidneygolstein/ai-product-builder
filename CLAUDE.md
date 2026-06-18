@@ -42,12 +42,12 @@ claude plugin upgrade ai-product-builder@sidneygolstein --scope user
 
 ## Key design rules
 
-- **One slice per session.** Each pipeline run handles exactly one ticket end-to-end.
+- **One ticket per session.** Each pipeline run handles exactly one ticket end-to-end.
 - **Independent subagents at every quality gate.** The agent that wrote the code never verifies it.
 - **Notion is the system of record.** Always write Notion first, then `ai/feature_list.json`. Never reverse.
-- **slice_type drives gate selection.** `ui` = full pipeline. `backend` = skip browser verification. `trivial` = skip spec-reviewer, simplifier, browser, and librarian.
+- **technical_shape drives gate selection.** Set in Notion as the `Technical Shape` property, mirrored into `ai/feature_list.json`. `ui` = full pipeline. `backend` = skip browser verification. `trivial` = skip spec-reviewer, simplifier, browser, and librarian.
 - **Teacher returns full output.** Never summarize — paste the full decision record inline so the user can validate before the session closes.
-- **Librarian runs once per feature** (final `/land` only, when all sibling slices are DONE). It synthesizes cross-slice ADRs into CLAUDE.md. Never runs mid-feature.
+- **Librarian runs once per feature** (final `/land` only, when all sibling tickets are DONE). It synthesizes cross-ticket ADRs into CLAUDE.md. Never runs mid-feature.
 
 ## Agent responsibilities (at a glance)
 
@@ -57,8 +57,8 @@ claude plugin upgrade ai-product-builder@sidneygolstein --scope user
 | `verifier` | `/verify` | Diff, tests, init.sh | `ai/verdicts/<id>.md` |
 | `simplifier` | `/ship` (ui/backend only) | Diff | ATTESTATION or HOLD |
 | `teacher` | `/ship` | Diff, PRD, spec | ADR, progress recap — **returned inline to user** |
-| `librarian` | `/land` (final slice only) | All ADRs for feature | CLAUDE.md promotions |
+| `librarian` | `/land` (final ticket only) | All ADRs for feature | CLAUDE.md promotions |
 
 ## Working on the plugin itself
 
-The `ai/` folder in this repo tracks improvements to the plugin as a product. Use `/next` to see what's queued, `/plan` to start a slice, etc. — the plugin dogfoods itself.
+The `ai/` folder in this repo tracks improvements to the plugin as a product. Use `/next` to see what's queued, `/plan` to start a ticket, etc. — the plugin dogfoods itself.

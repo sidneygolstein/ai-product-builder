@@ -2,9 +2,9 @@
 name: notion-board
 description: >-
   Read and write the Ticket Backlog in Notion via MCP. Use for ticket operations:
-  creating slices from a spec, querying what to work on next, updating status at pipeline
+  creating tickets from a spec, querying what to work on next, updating status at pipeline
   gates, syncing with ai/feature_list.json. Trigger on "ticket", "Ticket Backlog",
-  "what's next slice", or any explicit status transition (TO DO, DOING, TO REVIEW,
+  "what's next ticket", or any explicit status transition (TO DO, DOING, TO REVIEW,
   TO DEPLOY, DONE). Do NOT use for Notion wikis, meeting notes, or decision pages.
 ---
 
@@ -41,14 +41,15 @@ If `ai/config/notion.json` is missing or either field is empty, stop and ask the
 
 ## Database properties
 
-Every ticket has exactly these seven properties — no others:
+Every ticket has exactly these eight properties — no others:
 
 | Property | Type | Values / notes |
 |---|---|---|
 | **Title** | text | `[F<n>] Short imperative description` |
-| **Type** | select | `Feature` · `Bug` · `Chore` |
+| **Type** | select | `Feature` · `Bug` · `Tech` · `Discovery` |
 | **Feature** | text | Feature slug — must match `feature` field in `ai/feature_list.json` |
 | **Status** | select | Exact values from the status flow table — case-sensitive, no substitutions |
+| **Technical Shape** | select | `ui` · `backend` · `trivial` |
 | **Project** | relation | Relation to the project page — use `project_id` from `ai/config/notion.json` |
 | **Acceptance Criteria** | text | Newline-separated testable ACs covering: populated · missing/legacy · loading · flag-off |
 | **Refs** | text | Stringified JSON: `"{\"prd\":\"docs/brainstorms/...\",\"design\":\"docs/design/...\",\"notion\":\"<url>\"}"` — always `JSON.stringify` before writing |
@@ -81,12 +82,12 @@ When the user asks "what's next": return the **single highest-priority ticket** 
 ## Creating a ticket
 
 > **`Project` is mandatory on every ticket — no exceptions.**
-> This includes Bug tickets, Chore tickets, and any follow-up tickets opened mid-pipeline.
+> This includes Bug tickets, Tech tickets, Discovery tickets, and any follow-up tickets opened mid-pipeline.
 > Always read `project_id` from `ai/config/notion.json` and set the relation before creating.
 > A ticket without `Project` will not appear in the board filter and is effectively lost.
 
 1. Read `project_id` from `ai/config/notion.json`.
-2. Draft all seven properties — Title, Type, Feature, Status, **Project** (using `project_id`), Acceptance Criteria, Refs.
+2. Draft all eight properties — Title, Type, Feature, Status, **Technical Shape**, **Project** (using `project_id`), Acceptance Criteria, Refs.
 3. Show the draft as a markdown table and wait for explicit confirmation ("yes", "go", "ok") before calling `mcp__notion__notion-create-pages`.
 4. On confirmation, create in Notion first, then update `ai/feature_list.json`.
 
@@ -98,12 +99,12 @@ Every status change — by any command or agent — must follow this exact seque
 BEFORE transitioning:
   1. Read ai/config/notion.json for ticket_db_id and project_id. If you already read it
      earlier in this session, reuse the cached value — do not re-fetch.
-     Get notion_page_id for the slice from ai/feature_list.json.
-  2. Confirm the slice's current status matches the expected "from" status (never skip forward)
+     Get notion_page_id for the ticket from ai/feature_list.json.
+  2. Confirm the ticket's current status matches the expected "from" status (never skip forward)
 
 TO TRANSITION:
-  3. Call mcp__notion__notion-update-page with the slice's notion_page_id and new Status value
-  4. On success → update the slice's "status" field in ai/feature_list.json
+  3. Call mcp__notion__notion-update-page with the ticket's notion_page_id and new Status value
+  4. On success → update the ticket's "status" field in ai/feature_list.json
   5. On any failure at step 4 → write ai/decisions/divergence-<timestamp>.md, report, stop
 ```
 
@@ -115,10 +116,10 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
 
 **Write order:**
 1. Update Notion (`Status` property via `mcp__notion__notion-update-page`).
-2. On success, update the slice's `status` field in `ai/feature_list.json`.
+2. On success, update the ticket's `status` field in `ai/feature_list.json`.
 3. If step 2 fails, write a one-line note to `ai/decisions/divergence-<timestamp>.md`, report to the user, and stop — do not retry blindly.
 
-## ai/feature_list.json slice schema
+## ai/feature_list.json ticket schema
 
 ```json
 {
@@ -126,7 +127,7 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
   "feature": "<slug — matches Notion ticket Feature property, e.g. 'user-search'>",
   "title": "Short imperative description",
   "status": "TO DO",
-  "slice_type": "ui | backend | trivial",
+  "technical_shape": "ui | backend | trivial",
   "notion_page_id": "<Notion page UUID>",
   "branch": "feature/<feature>-F6.1",
   "worktree": ".worktrees/F6.1",
@@ -152,4 +153,4 @@ Update **both** Notion and `ai/feature_list.json` — they must never diverge.
 
 ## Done when
 
-Both the Notion page `Status` and the matching `ai/feature_list.json` slice `status` reflect the same value. Return the Notion page ID and the updated slice ID to the caller.
+Both the Notion page `Status` and the matching `ai/feature_list.json` ticket `status` reflect the same value. Return the Notion page ID and the updated ticket ID to the caller.

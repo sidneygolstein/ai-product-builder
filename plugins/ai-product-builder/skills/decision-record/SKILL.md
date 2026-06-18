@@ -14,18 +14,18 @@ Do not skip. Undocumented decisions become archaeology problems for the next dev
 Gather these before starting. If any are missing, ask — do not invent context.
 
 - `<feature>` slug (from `ai/feature_list.json` → `feature`)
-- `<slice-id>` (format `F<n>.<m>`, from the ticket being shipped)
+- `<ticket-id>` (format `F<n>.<m>`, from the ticket being shipped)
 - The PR diff or merge commit (reference only; do not restate in the record)
-- The plan file at `ai/plans/<slice-id>.md` if one exists (for Alternatives considered)
+- The plan file at `ai/plans/<ticket-id>.md` if one exists (for Alternatives considered)
 
 ## Which kind of record
 
 | Situation | Location | Naming |
 |---|---|---|
-| Decision scoped to one slice | `ai/decisions/` | `<feature>-<slice-id>-<slug>.md` |
-| Decision that constrains future slices or the whole project | `docs/decisions/` | `ADR-NNN-<slug>.md` |
+| Decision scoped to one ticket | `ai/decisions/` | `<feature>-<ticket-id>-<slug>.md` |
+| Decision that constrains future tickets or the whole project | `docs/decisions/` | `ADR-NNN-<slug>.md` |
 
-When unsure, use `docs/decisions/` — slice records are easy to migrate down; project decisions buried in `ai/` are lost.
+When unsure, use `docs/decisions/` — ticket records are easy to migrate down; project decisions buried in `ai/` are lost.
 
 **Finding the next ADR number:**
 ```bash
@@ -33,11 +33,11 @@ ls docs/decisions/ADR-*.md 2>/dev/null | sort | tail -1
 ```
 Parse `NNN`, increment by 1, zero-pad to 3 digits. If `docs/decisions/` does not exist, create it and start at `ADR-001`.
 
-The `<slug>` is always required, even for slice records. Use kebab-case, 3–5 words (e.g., `zustand-brief-store-shape`, `rss-polling-interval`).
+The `<slug>` is always required, even for ticket records. Use kebab-case, 3–5 words (e.g., `zustand-brief-store-shape`, `rss-polling-interval`).
 
 ## When to write one
 
-- **Every shipped slice** — mandatory, written by the `teacher` agent at `/ship` close
+- **Every shipped ticket** — mandatory, written by the `teacher` agent at `/ship` close (teacher uses this exact template and filename convention)
 - Any mid-session decision where an alternative was meaningfully considered (stack, schema, provider, major refactor)
 - When a future developer would otherwise have to reverse-engineer the reasoning from the code
 
@@ -46,7 +46,7 @@ The `<slug>` is always required, even for slice records. Use kebab-case, 3–5 w
 ## Template
 
 ```markdown
-# <feature> / <slice-id> — <Short title>
+# <feature> / <ticket-id> — <Short title>
 
 **Date:** <run: date -u +%Y-%m-%d>
 **Status:** Shipped | Proposed | Deprecated
