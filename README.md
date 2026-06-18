@@ -75,7 +75,7 @@ TDD implementation via context-preloaded subagents. Main session gathers all con
 Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO SPEC REVIEW → TO DO → none), and prints the single highest-priority ticket with the exact command to run. Use at session start when unsure what to work on.
 
 ### `/verify` — Gate 3 prep
-Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), then checks browser verification and every `definition_of_done` item. Browser verification uses Playwright MCP and is skipped (`N/A`) for `backend` and `trivial` tickets. Outputs `VERDICT: pass | warn | block` with evidence.
+Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), then checks browser verification and every `definition_of_done` item. Browser verification is skipped (`N/A`) for `backend` and `trivial` tickets. Outputs `VERDICT: pass | warn | block` with evidence.
 - `pass` — status moves to TO REVIEW; proceed to `/ship`
 - `warn` — status moves to TO REVIEW; warnings are carried into the PR description for human review
 - `block` — status stays DOING; verifier writes `ai/verdicts/<id>.md`; run `/fix <id>`
@@ -102,7 +102,7 @@ Writes a handoff via the `handoff` skill (including any stale-doc flags from the
 | Agent | When | Independence guarantee | Tools |
 |---|---|---|---|
 | `spec-reviewer` | Gate 1 — after `/tickets` (ui/backend only) | Did not author the tickets or specs | `Read`, `mcp__notion` |
-| `verifier` | Gate 3-prep — after `/build` | Did not write the code | `Read`, `Bash`, `mcp__playwright` |
+| `verifier` | Gate 3-prep — after `/build` | Did not write the code | `Read`, `Bash` |
 | `simplifier` | Inside `/ship` — before PR (ui/backend only) | Cannot fix bugs or change scope | `Read`, `Edit` |
 | `teacher` | Inside `/ship` — after merge | Writes history, not code; **returns full decision record inline to the user** | `Read`, `Edit`, `mcp__notion` |
 | `librarian` | Inside `/land` — final ticket of a feature only | Reads ADR corpus, not code | `Read`, `Edit`, `Bash` |
@@ -171,7 +171,6 @@ Then edit `ai/init.sh` with this repo's real test/lint/build command, and create
 | MCP | Used by |
 |---|---|
 | **Notion** | `/tickets`, `/spec-review`, `/plan`, `/verify`, `/ship`, `notion-board` skill |
-| **Playwright** | `verifier` subagent (browser verification in `/verify` — UI tickets only) |
 | **GitHub** | `/ship` (PR creation) |
 
 ## Status flow
