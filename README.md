@@ -1,4 +1,4 @@
-# ai-product-builder — v2.1.0
+# ai-product-builder — v2.1.1
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 

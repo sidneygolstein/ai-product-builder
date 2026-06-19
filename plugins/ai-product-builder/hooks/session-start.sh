@@ -20,6 +20,15 @@ if [ -f ai/progress.md ]; then
 fi
 
 # 3. Run baseline (30s timeout — informational only at session start)
+# Bootstrap PATH so node/npm/python are available even when the shell profile isn't loaded.
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+    source "$HOME/.nvm/nvm.sh" --no-use 2>/dev/null || true
+fi
+if command -v fnm &>/dev/null; then
+    eval "$(fnm env 2>/dev/null)" 2>/dev/null || true
+fi
+
 if [ -f ai/init.sh ]; then
     printf '\n[baseline] Running ai/init.sh (30s timeout)...\n'
     if timeout 30 bash ai/init.sh 2>&1; then
