@@ -31,7 +31,11 @@ fi
 
 if [ -f ai/init.sh ]; then
     printf '\n[baseline] Running ai/init.sh (30s timeout)...\n'
-    if timeout 30 bash ai/init.sh 2>&1; then
+    # macOS ships no `timeout`; use it (or gtimeout) when present, else run without a hard limit.
+    if command -v timeout &>/dev/null; then _to="timeout 30"
+    elif command -v gtimeout &>/dev/null; then _to="gtimeout 30"
+    else _to=""; fi
+    if $_to bash ai/init.sh 2>&1; then
         printf '[baseline] Passed.\n'
     else
         _ec=$?
