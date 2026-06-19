@@ -1,4 +1,4 @@
-# ai-product-builder — v2.1.2
+# ai-product-builder — v2.1.3
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -104,7 +104,7 @@ Writes a handoff via the `handoff` skill (including any stale-doc flags from the
 | `spec-reviewer` | Gate 1 — after `/tickets` (ui/backend only) | Did not author the tickets or specs | `Read`, `mcp__notion` |
 | `verifier` | Gate 3-prep — after `/build` | Did not write the code | `Read`, `Bash` |
 | `simplifier` | Inside `/ship` — before PR (ui/backend only) | Cannot fix bugs or change scope | `Read`, `Edit` |
-| `teacher` | Inside `/ship` — after merge | Writes history, not code; **returns full decision record inline to the user** | `Read`, `Edit`, `mcp__notion` |
+| `teacher` | Inside `/ship` — after merge | Writes history, not code; **returns full decision record inline to the user** | `Read`, `Edit`, `Write` |
 | `librarian` | Inside `/land` — final ticket of a feature only | Reads ADR corpus, not code | `Read`, `Edit`, `Bash` |
 
 Verifier pass is enforced by convention at Gate 3 — `/ship` will not proceed without one. Subagents run in isolated contexts — an agent that touched code in this session cannot verify it.

@@ -1,7 +1,7 @@
 ---
 name: teacher
 description: Use after the PR is merged and Gate 3 is approved. Writes the decision record and appends a recap to ai/progress.md so the theory behind the change survives the context window. MUST be used for every shipped ticket.
-tools: Read, Edit
+tools: Read, Edit, Write
 model: claude-haiku-4-5-20251001
 ---
 
