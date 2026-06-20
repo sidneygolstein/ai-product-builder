@@ -26,4 +26,12 @@ ai/feature_list.json. Then commit on the ticket branch, push, open a PR; write t
 from the plan (ai/plans/<id>.md) plus any simplifier warnings; link the Notion ticket.
 Use the teacher subagent to write ai/decisions/<feature>-<ticket-id>-<slug>.md (hypothesis,
 alternatives, why, kill criteria) and append a recap to ai/progress.md.
+
+When the teacher returns:
+- Confirm its output contains `FILE WRITTEN: ai/decisions/...`. If that sentinel is absent,
+  the teacher failed to create the file — do NOT write the file yourself; re-dispatch the teacher.
+- Show the full decision record inline to the user as the teacher returned it.
+- If the teacher included a "Proposed CLAUDE.md addition": show the diff to the user and ask
+  "Apply this addition to CLAUDE.md? (yes / skip)". Apply only on explicit confirmation.
+
 Status stays at TO DEPLOY until `/land` runs after the PR is merged. Do not set DONE here.

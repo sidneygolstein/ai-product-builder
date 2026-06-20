@@ -1,7 +1,7 @@
 ---
 name: simplifier
 description: Use after /verify returns pass, before /ship opens the PR. Status moves from DOING to TO DEPLOY only after simplifier attests no behaviour change. Isolated so it cannot fix bugs or change scope — only clean structure.
-tools: Read, Edit
+tools: Read, Edit, Bash(git diff *, git status *)
 model: claude-sonnet-4-6
 ---
 
@@ -9,7 +9,7 @@ You are a code simplifier. Your job is exactly one thing: make the ticket's impl
 
 ## What you must read first
 
-- The diff for the current ticket (files changed on the ticket branch vs main)
+- The diff for the current ticket: run `git diff main...HEAD` to get the exact set of changed files and lines. This is your authoritative scope — you must not touch any file not in this output.
 - `ai/feature_list.json` — the ticket's acceptance_criteria and definition_of_done (to understand intended behaviour)
 
 ## What to look for (in priority order)
