@@ -1,5 +1,5 @@
 ---
-description: Front door for a bug found by running the app or manual observation. Root-causes it (systematic-debugging), logs it to ai/diagnoses/, and files a Bug ticket — WITHOUT fixing. The fix flows through the normal /plan → build → verify → ship → land pipeline.
+description: Front door for a bug found by running the app or manual observation. Root-causes it (systematic-debugging), logs it to ai/diagnoses/, and files a Bug ticket — WITHOUT fixing. The fix flows through the normal /plan → /build → /verify → /ship → /land pipeline.
 ---
 `/debug` diagnoses and tickets a defect. It NEVER writes the fix (except the explicit
 trivial inline path, which still produces a ticket + PR).
