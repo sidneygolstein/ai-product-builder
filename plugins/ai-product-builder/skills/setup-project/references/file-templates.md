@@ -47,6 +47,7 @@ Top level:
   "title": "<imperative description>",
   "status": "<exact Status value — case-sensitive, see notion-board skill>",
   "technical_shape": "ui | backend | trivial",
+  "severity": "<Bug tickets only: critical | major | minor | trivial>",
   "notion_page_id": "<Notion page UUID of the ticket>",
   "branch": "feature/<slug>-<id>",
   "worktree": ".worktrees/<id>",
@@ -64,10 +65,15 @@ Top level:
   "refs": {
     "prd": "<docs/brainstorms/... or empty string>",
     "design": "<docs/design/... or empty string>",
+    "diagnosis": "<path to ai/diagnoses/<bug-id>.md (set by /apb-debug)>",
     "notion": "<full Notion page URL>"
   }
 }
 ```
+
+**Optional fields:**
+- `severity` — Bug tickets only: critical | major | minor | trivial
+- `refs.diagnosis` — path to ai/diagnoses/<bug-id>.md (set by /apb-debug)
 
 **Slug derivation (for `branch` and `worktree`):**
 1. Use the ticket's `Feature` text property: lowercase, replace spaces with dashes.
