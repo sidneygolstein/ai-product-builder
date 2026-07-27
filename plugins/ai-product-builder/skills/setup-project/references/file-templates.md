@@ -65,7 +65,7 @@ Top level:
   "refs": {
     "prd": "<docs/brainstorms/... or empty string>",
     "design": "<docs/design/... or empty string>",
-    "diagnosis": "<path to ai/diagnoses/<bug-id>.md (set by /apb-debug)>",
+    "diagnosis": "<path to ai/diagnoses/<bug-id>.md (set by /debug)>",
     "notion": "<full Notion page URL>"
   }
 }
@@ -73,7 +73,7 @@ Top level:
 
 **Optional fields:**
 - `severity` — Bug tickets only: critical | major | minor | trivial
-- `refs.diagnosis` — path to ai/diagnoses/<bug-id>.md (set by /apb-debug)
+- `refs.diagnosis` — path to ai/diagnoses/<bug-id>.md (set by /debug)
 
 **Slug derivation (for `branch` and `worktree`):**
 1. Use the ticket's `Feature` text property: lowercase, replace spaces with dashes.
