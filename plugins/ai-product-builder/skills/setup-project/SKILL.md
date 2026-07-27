@@ -200,6 +200,7 @@ Show every file's full content as a group — one fenced code block per file wit
 | `ai/decisions/.gitkeep` | Keeps the ADR directory tracked in git. |
 | `ai/plans/.gitkeep` | Keeps the plans directory tracked in git. Written to by `/plan` after approval. |
 | `ai/verdicts/.gitkeep` | Keeps the verdicts directory tracked in git. Written to by `verifier` on block. |
+| `ai/diagnoses/.gitkeep` | Keeps the diagnoses directory tracked in git. Written to by `/debug`. |
 | `ai/init.sh` | Q3b–Q3c composed under `set -euo pipefail` (lint + typecheck only — Q3a is not included; `/verify` owns the full test suite). Then `chmod +x ai/init.sh`. |
 
 Exact templates: `references/file-templates.md`.
@@ -294,6 +295,7 @@ Files written:
   ai/decisions/.gitkeep    ADR directory (git-tracked)
   ai/plans/.gitkeep        plans directory (git-tracked)
   ai/verdicts/.gitkeep     verifier verdicts directory (git-tracked)
+  ai/diagnoses/.gitkeep    diagnoses directory (git-tracked)
   CLAUDE.md                project rules (created / merged)
 
 Notion:
