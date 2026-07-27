@@ -3,6 +3,12 @@ description: Show the single highest-priority ticket and the exact command to ru
 ---
 Read ai/feature_list.json. Apply this priority order and return the FIRST match:
 
+0. Any ticket with `type` = `Bug` and `severity` = `critical` and status `TO DO` or `DOING`
+   → If `DOING`: `/apb-build` (tests not yet green) or `/apb-verify <id>` (build looks complete),
+     same as rule 1.
+   → If `TO DO`: Command: `/apb-plan <id>`
+   → Also print: worktree path + branch if `DOING`. Critical production bugs pre-empt all other work.
+
 1. Any ticket with status `DOING`
    → Check if `ai/verdicts/<id>.md` exists and contains `VERDICT: block`
      - If yes: Command: `/fix <id>`
