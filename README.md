@@ -1,4 +1,4 @@
-# ai-product-builder — v2.1.4
+# ai-product-builder — v2.2.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -10,10 +10,10 @@ A Claude Code plugin that encodes the full AI product development pipeline — f
 /brainstorm → /design (optional) → /tickets → /spec-review → /plan → /build → /verify → /ship → /land
                                                    ↑ Gate 1          ↑ Gate 2         ↑ Gate 3
 
-/apb-debug (runtime bugs) ────────────────────→ /plan (feeds into main pipeline)
+/debug (runtime bugs) ────────────────────→ /plan (feeds into main pipeline)
 ```
 
-Each stage is a slash command. Each gate requires explicit human approval before the next stage starts. `/apb-debug` is an alternative entry point for discovered runtime bugs that feeds into the `/plan → /build → /verify → /ship → /land` phase.
+Each stage is a slash command. Each gate requires explicit human approval before the next stage starts. `/debug` is an alternative entry point for discovered runtime bugs that feeds into the `/plan → /build → /verify → /ship → /land` phase.
 
 | Stage | Command | Agent involved | Output |
 |---|---|---|---|
@@ -26,7 +26,7 @@ Each stage is a slash command. Each gate requires explicit human approval before
 | 5 | `/build` | — | TDD: failing tests first, then green; saves suite output to `ai/verdicts/<id>-tests.txt` |
 | Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
 | on block | `/fix <id>` | — | Re-enter TDD from verifier failures in `ai/verdicts/<id>.md` |
-| runtime bug | `/apb-debug` | `systematic-debugging` | Root-cause issue, log to `ai/diagnoses/`, file Bug ticket; feeds into `/plan → /build → /verify → /ship → /land` |
+| runtime bug | `/debug` | `systematic-debugging` | Root-cause issue, log to `ai/diagnoses/`, file Bug ticket; feeds into `/plan → /build → /verify → /ship → /land` |
 | Gate 3 | `/ship` | `simplifier` (ui/backend only), `teacher` | PR + decision record shown inline to user; status → TO DEPLOY |
 | post-merge | `/land` | `librarian` (final ticket of feature only) | Checkout main, mark DONE, clean up, sync CLAUDE.md, write handoff |
 
@@ -75,7 +75,7 @@ Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enume
 TDD implementation via context-preloaded subagents. Main session gathers all context first (plan, source file paths, test files, design handoff), then classifies tasks as INDEPENDENT or DEPENDENT — defaulting to INDEPENDENT; only marking DEPENDENT when task B concretely uses code or types that task A must produce first. Independent tasks are dispatched in parallel (multiple agents in one response); dependent chains run strictly sequentially. Each subagent receives file paths (not pasted content) and runs TDD: failing test first, implement until green, then scope-only tests to confirm local correctness. Full suite runs once at integrate, and output is saved to `ai/verdicts/<id>-tests.txt` for the verifier to read. Does not mark the ticket complete — the verifier decides.
 
 ### `/next`
-Read-only. Reads `ai/feature_list.json`, applies priority order (DOING → TO SPEC REVIEW → TO DO → none), and prints the single highest-priority ticket with the exact command to run. Use at session start when unsure what to work on.
+Read-only. Reads `ai/feature_list.json`, applies priority order (critical `Bug` → DOING → TO SPEC REVIEW → TO DO → none), and prints the single highest-priority ticket with the exact command to run. A `Type=Bug` ticket with `severity: critical` pre-empts all other work. Use at session start when unsure what to work on.
 
 ### `/verify` — Gate 3 prep
 Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), then checks browser verification and every `definition_of_done` item. Browser verification is skipped (`N/A`) for `backend` and `trivial` tickets. Outputs `VERDICT: pass | warn | block` with evidence.
@@ -83,7 +83,7 @@ Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (
 - `warn` — status moves to TO REVIEW; warnings are carried into the PR description for human review
 - `block` — status stays DOING; verifier writes `ai/verdicts/<id>.md`; run `/fix <id>`
 
-### `/apb-debug`
+### `/debug`
 Front door for a discovered bug — root-causes the issue using systematic-debugging, logs findings to `ai/diagnoses/`, and files a Bug ticket in Notion without implementing a fix. Hands off to `/plan` for the fix phase.
 
 ### `/fix <id>`
@@ -158,13 +158,14 @@ ai/
 ├── verdicts/               # verifier output per ticket — written on block, read by /fix
 │                           # also: <id>-tests.txt — full suite output from /build, read by /verify
 ├── decisions/              # per-ticket decision records (ADRs)
+├── diagnoses/              # per-bug root-cause records — written by /debug, read by /plan
 └── init.sh                 # baseline check: test && lint [&& typecheck]
 ```
 
 Run `/setup-project` — it interviews you one question at a time, resolves Notion IDs automatically, imports existing tickets, writes all files, and merges CLAUDE.md and hook config. Or bootstrap manually:
 
 ```bash
-mkdir -p ai/config ai/decisions
+mkdir -p ai/config ai/decisions ai/diagnoses
 cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/feature_list.json ai/
 cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/progress.md ai/
 cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/init.sh ai/ && chmod +x ai/init.sh
@@ -195,3 +196,5 @@ Status values are case-sensitive. Both the Notion ticket and `ai/feature_list.js
 | `TO REVIEW` | `/verify` | Verifier returned `pass` |
 | `TO DEPLOY` | `/ship` | Simplifier attested no behaviour change (or trivial ticket bypassed simplifier) |
 | `DONE` | `/land` | PR merged, main pulled, worktree cleaned |
+
+**Bug tickets from `/debug`** are created directly at `TO DO` (with `severity`), skipping `TO SPEC REVIEW` — the `ai/diagnoses/<bug-id>.md` root-cause record serves as the spec. A `severity: critical` bug is surfaced first by `/next`.

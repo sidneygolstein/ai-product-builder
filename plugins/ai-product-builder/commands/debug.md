@@ -1,7 +1,7 @@
 ---
 description: Front door for a bug found by running the app or manual observation. Root-causes it (systematic-debugging), logs it to ai/diagnoses/, and files a Bug ticket — WITHOUT fixing. The fix flows through the normal /plan → build → verify → ship → land pipeline.
 ---
-`/apb-debug` diagnoses and tickets a defect. It NEVER writes the fix (except the explicit
+`/debug` diagnoses and tickets a defect. It NEVER writes the fix (except the explicit
 trivial inline path, which still produces a ticket + PR).
 
 **1. Context gate — required.**
@@ -40,7 +40,7 @@ Show the draft ticket and WAIT for explicit confirmation before creating in Noti
   - Non-trivial: Type=Bug, Status=TO DO (the diagnosis is the spec — spec-review is skipped),
     severity set. Acceptance Criteria: (a) "the bug no longer reproduces"; (b) "regression test
     <name> added". refs.diagnosis → ai/diagnoses/<bug-id>.md, refs.file → root-cause file:line,
-    refs.found_in → "/apb-debug <date>". Project relation is MANDATORY. Mirror into
+    refs.found_in → "/debug <date>". Project relation is MANDATORY. Mirror into
     ai/feature_list.json (id, title, status, type="Bug", technical_shape, severity, branch,
     worktree, notion_page_id, acceptance_criteria, definition_of_done, refs).
   - Trivial: same, but technical_shape="trivial" (skips spec-review AND the simplifier). Offer to
@@ -51,12 +51,12 @@ Show the draft ticket and WAIT for explicit confirmation before creating in Noti
 Diagnosis:  ai/diagnoses/<bug-id>.md
 Ticket:     <bug-id> — <title>   (filed · <severity> · status TO DO)
 Root cause: <one line> (<file:line>)
-Next: /apb-plan <bug-id>
+Next: /plan <bug-id>
 ```
-(Use `/apb-build <bug-id>` instead when the trivial inline path was taken and no plan is needed.)
+(Use `/build <bug-id>` instead when the trivial inline path was taken and no plan is needed.)
 
 Constraints (mirroring /fix):
   - Do NOT apply a fix except the explicit trivial inline path.
   - Do NOT change any ticket status other than creating the new Bug ticket at TO DO.
-  - Scope is the single reported defect. Note unrelated issues for a separate /apb-debug run;
+  - Scope is the single reported defect. Note unrelated issues for a separate /debug run;
     do not chase them here.
