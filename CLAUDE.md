@@ -31,13 +31,8 @@ Always update `plugins/ai-product-builder/.claude-plugin/plugin.json` and `READM
 After committing and pushing to `main`:
 
 ```bash
-claude plugin marketplace refresh sidneygolstein/ai-product-builder
-```
-
-To update the plugin in a consumer project (user scope):
-
-```bash
-claude plugin upgrade ai-product-builder@sidneygolstein --scope user
+claude plugin marketplace update sidneygolstein-ai-product-builder
+claude plugin update ai-product-builder   # user scope; restart Claude Code to apply
 ```
 
 ## Key design rules
