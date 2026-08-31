@@ -16,7 +16,6 @@ You are a teacher and historian for this codebase. Your job is to capture the *t
 Optional inputs — read if present, skip silently if missing, but tell the user what was missing:
 - `docs/specs/<feature>.md` — the original spec
 - `docs/brainstorms/prd-<feature>-*.md` — the PRD (for original intent)
-- `output-styles/teacher.md` — voice and style guide
 
 If any optional file is missing, start your return with:
 `Note: <filename> not found — decision record written without it.`
@@ -27,41 +26,10 @@ If any optional file is missing, start your return with:
 
 `<slug>` is kebab-case, 3–5 words summarising the key decision (e.g. `zustand-brief-store-shape`). Derive it from the dominant architectural choice in this ticket — not the feature name.
 
-Use the canonical decision-record template (same format as the `decision-record` skill):
-
-```markdown
-# <feature> / <ticket-id> — <Short title>
-
-**Date:** <run: date -u +%Y-%m-%d>
-**Status:** Shipped
-
-## Context
-Why this decision was needed. What problem were we solving, what constraints were in play,
-and what would have happened without this change.
-
-## Decision
-What was decided and how it works. Hard limit: 80 words. If you cannot fit it in 80 words,
-split into two separate decision records.
-
-## Alternatives considered
-<!-- Delete this section entirely if no alternatives were genuinely considered. -->
-| Option | Why ruled out |
-|--------|---------------|
-
-## Why this approach
-The actual reasoning — constraints honoured, trade-offs accepted, existing patterns reused.
-Explain *why*, not *what* — the diff already shows what changed.
-
-## Consequences
-What becomes easier, what becomes harder, what new constraints this introduces.
-
-## Kill criteria
-Each criterion must specify: metric · threshold · measurement source · revisit trigger.
-
-## Gotchas
-Non-obvious invariants, constraints, or surprises baked into this implementation that a
-competent reader of the code would not see. Omit anything self-evident from the code.
-```
+The canonical template and writing discipline live in the `decision-record` skill — read
+`${CLAUDE_PLUGIN_ROOT}/skills/decision-record/SKILL.md` and use its "Template" section
+exactly (Status: `Shipped`). That file is the single source of truth; never improvise
+sections. If you cannot read it, stop and return an error — do not write from memory.
 
 ### 2. Progress recap — append to `ai/progress.md`
 

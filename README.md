@@ -38,7 +38,7 @@ Each ticket carries a Notion `Type` (`Feature` · `Bug` · `Tech` · `Discovery`
 |---|---|---|
 | `ui` | Has a design handoff or modifies UI components/pages | None — full pipeline |
 | `backend` | Only touches API, service, DB, config, or infra layers | None — full pipeline (no design handoff required) |
-| `trivial` | Small contained change: no new files, no logic change, ~50 lines max | `spec-reviewer` subagent, simplifier subagent |
+| `trivial` | Small contained change: no new files, no logic change, ~50 lines max | `spec-reviewer` subagent, simplifier subagent, librarian |
 
 ## Install
 
@@ -129,17 +129,17 @@ Three hooks fire automatically — no configuration needed after install.
 
 | Event | Script | What it does |
 |---|---|---|
-| `SessionStart` | `session-start.sh` | Scaffolds `ai/` if missing; prints `ai/progress.md`; runs `ai/init.sh` with a 30s timeout (informational — never blocks); audits CLAUDE.md coverage (cached daily in `/tmp`). |
+| `SessionStart` | `session-start.sh` | Scaffolds `ai/` if missing; prints `ai/progress.md`; runs `ai/init.sh` with a 30s timeout (informational — never blocks); routes to `/fix` when the active ticket has a blocking verdict; surfaces unreconciled Notion divergence files; audits CLAUDE.md coverage (cached daily in `/tmp`). |
 | `PreToolUse(Bash)` | `destructive-guard.sh` | Blocks `rm -rf`, force-push, and reads of `.env` files before they run. Anti-footgun, not anti-malicious. |
 | `PostToolUse(Edit/Write)` | `post-tool-format.sh` | Auto-formats the file just written using the project's available formatters (Prettier/ESLint for TS/JS, Ruff for Python, gofmt for Go, rustfmt for Rust). Silently skips if no formatter is available. |
 
 ## Invariants
 
-These rules are injected into every project's CLAUDE.md via `@~/.claude/plugins/ai-product-builder/INVARIANTS.md`:
+These rules are copied into every project at setup (`ai/INVARIANTS.md`) and imported from the project's CLAUDE.md via `@ai/INVARIANTS.md`:
 
 - Always read `ai/progress.md` and `ai/feature_list.json` before acting.
 - Never let the agent that wrote a spec or code review its own work — use spec-reviewer / verifier.
-- A ticket is not done until `ai/init.sh` passes, every AC has a green test, and browser verification passes (UI tickets only — skip for `backend` and `trivial` technical shapes).
+- A ticket is not done until `ai/init.sh` passes and every AC has a green test.
 - One ticket per session. Prefer small, independent tickets.
 - Teach as you go: explain decisions; write a decision record per ticket.
 - Ticket `Type` (Notion) is one of `Feature` · `Bug` · `Tech` · `Discovery`. `technical_shape` (`ui` / `backend` / `trivial`) is set in Notion as the `Technical Shape` property and determines which gates run — see the Ticket types and technical shape table above.

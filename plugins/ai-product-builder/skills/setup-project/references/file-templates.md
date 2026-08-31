@@ -130,7 +130,7 @@ After writing: `chmod +x ai/init.sh`
 - MCP connections: <Q5>
 
 ## Invariants
-@~/.claude/plugins/ai-product-builder/INVARIANTS.md
+@ai/INVARIANTS.md
 
 ## Commands
 - Baseline: `bash ai/init.sh`

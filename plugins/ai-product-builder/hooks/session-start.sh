@@ -58,7 +58,11 @@ if [ -f ai/feature_list.json ] && command -v jq &>/dev/null; then
     printf '\n── Tickets ─────────────────────────────────────\n'
     if [ -n "$active_id" ] && [ "$active_id" != "null" ] && [ "$active_id" != "" ]; then
         printf 'Active  [%s] %s\n' "$active_id" "$active_title"
-        printf 'Run     /build or /verify %s\n' "$active_id"
+        if [ -f "ai/verdicts/$active_id.md" ] && grep -q 'VERDICT: block' "ai/verdicts/$active_id.md" 2>/dev/null; then
+            printf 'Run     /fix %s  (verifier returned VERDICT: block)\n' "$active_id"
+        else
+            printf 'Run     /build or /verify %s\n' "$active_id"
+        fi
     elif [ -n "$next_id" ] && [ "$next_id" != "null" ] && [ "$next_id" != "" ]; then
         printf 'Active  none\n'
         printf 'Next    [%s] %s\n' "$next_id" "$next_title"
@@ -73,7 +77,13 @@ if [ -f ai/feature_list.json ] && command -v jq &>/dev/null; then
     printf '────────────────────────────────────────────────\n'
 fi
 
-# 5. CLAUDE.md audit (existing script)
+# 5. Surface unreconciled Notion/local divergence files (written on failed status writes)
+if ls ai/decisions/divergence-*.md >/dev/null 2>&1; then
+    printf '\n[divergence] Notion and ai/feature_list.json may be out of sync — reconcile then delete:\n'
+    ls ai/decisions/divergence-*.md | sed 's/^/  /'
+fi
+
+# 6. CLAUDE.md audit (existing script)
 if [ -f "$SCRIPT_DIR/audit-claude-md.sh" ]; then
     bash "$SCRIPT_DIR/audit-claude-md.sh"
 fi

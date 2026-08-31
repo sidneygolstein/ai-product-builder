@@ -5,7 +5,9 @@ Run only after the PR is merged. If unsure, check with the user before proceedin
 
 1. **Confirm merge** — ask: "Is the PR merged?" Do not proceed until the user confirms.
 
-2. **Land on main**
+2. **Land on main** — first `cd` to the main checkout (the repo root, NOT the ticket's
+   `.worktrees/<id>` directory — `git checkout main` fails inside a worktree because main
+   is already checked out elsewhere). Find it with `git worktree list` if unsure. Then:
    ```
    git checkout main
    git pull

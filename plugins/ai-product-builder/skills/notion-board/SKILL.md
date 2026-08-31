@@ -108,16 +108,7 @@ TO TRANSITION:
   5. On any failure at step 4 → write ai/decisions/divergence-<timestamp>.md, report, stop
 ```
 
-The write order (Notion first, local second) is intentional: Notion is the system of record. If local write fails, the divergence file preserves what happened. Never reverse the order.
-
-## Updating status
-
-Update **both** Notion and `ai/feature_list.json` — they must never diverge.
-
-**Write order:**
-1. Update Notion (`Status` property via `mcp__notion__notion-update-page`).
-2. On success, update the ticket's `status` field in `ai/feature_list.json`.
-3. If step 2 fails, write a one-line note to `ai/decisions/divergence-<timestamp>.md`, report to the user, and stop — do not retry blindly.
+The write order (Notion first, local second) is intentional: Notion is the system of record. Both stores must never diverge. If local write fails, the divergence file preserves what happened. Never reverse the order.
 
 ## ai/feature_list.json ticket schema
 

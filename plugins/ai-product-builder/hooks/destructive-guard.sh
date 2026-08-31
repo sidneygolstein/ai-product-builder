@@ -8,7 +8,13 @@
 
 input=$(cat)
 
-cmd=$(printf '%s' "$input" | python3 - <<'PYEOF' 2>/dev/null
+# Extract tool_input.command. Try jq, then python3. If neither is available, fall back to
+# scanning the raw JSON with the same patterns below — a conservative fail-closed default
+# (never silently allow because a parser is missing).
+if command -v jq >/dev/null 2>&1; then
+    cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // ""' 2>/dev/null)
+elif command -v python3 >/dev/null 2>&1; then
+    cmd=$(printf '%s' "$input" | python3 - <<'PYEOF' 2>/dev/null
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -17,6 +23,9 @@ except Exception:
     print('')
 PYEOF
 )
+else
+    cmd="$input"
+fi
 
 if [ -z "$cmd" ]; then
     exit 0

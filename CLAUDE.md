@@ -45,7 +45,7 @@ claude plugin upgrade ai-product-builder@sidneygolstein --scope user
 - **One ticket per session.** Each pipeline run handles exactly one ticket end-to-end.
 - **Independent subagents at every quality gate.** The agent that wrote the code never verifies it.
 - **Notion is the system of record.** Always write Notion first, then `ai/feature_list.json`. Never reverse.
-- **technical_shape drives gate selection.** Set in Notion as the `Technical Shape` property, mirrored into `ai/feature_list.json`. `ui` = full pipeline. `backend` = skip browser verification. `trivial` = skip spec-reviewer, simplifier, browser, and librarian.
+- **technical_shape drives gate selection.** Set in Notion as the `Technical Shape` property, mirrored into `ai/feature_list.json`. `ui` and `backend` = full pipeline (backend needs no design handoff). `trivial` = skip spec-reviewer, simplifier, and librarian; build inline. Canonical definition: `plugins/ai-product-builder/INVARIANTS.md` — keep the two in sync.
 - **Teacher returns full output.** Never summarize — paste the full decision record inline so the user can validate before the session closes.
 - **Librarian runs once per feature** (final `/land` only, when all sibling tickets are DONE). It synthesizes cross-ticket ADRs into CLAUDE.md. Never runs mid-feature.
 

@@ -216,11 +216,17 @@ discard existing content. Wait for "yes / go / ok".
 
 Required sections: see `references/file-templates.md → CLAUDE.md template`.
 
-Use `@` import for the invariants block:
+Copy the plugin's invariants into the project so the import never depends on the plugin
+install location (plugin cache paths change on every update):
 ```
-@~/.claude/plugins/ai-product-builder/INVARIANTS.md
+cp "${CLAUDE_PLUGIN_ROOT}/INVARIANTS.md" ai/INVARIANTS.md
 ```
-If `@` imports are not supported in this environment, paste the five invariants inline.
+Then use a project-local `@` import in CLAUDE.md:
+```
+@ai/INVARIANTS.md
+```
+Re-running /setup-project refreshes the copy. If `@` imports are not supported in this
+environment, paste the invariants inline instead.
 
 ### Note on hooks
 

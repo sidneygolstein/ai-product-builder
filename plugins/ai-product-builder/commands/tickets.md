@@ -16,4 +16,4 @@ After each ticket is created in Notion, capture the returned page UUID and write
 every downstream status update. Also populate `feature` (slug from the Feature property).
 Mirror every ticket into ai/feature_list.json with feature + technical_shape + branch + worktree +
 notion_page_id + definition_of_done. Save docs/specs/<feature>.md using the template at
-~/.claude/plugins/ai-product-builder/templates/spec.md as the structure.
+${CLAUDE_PLUGIN_ROOT}/templates/spec.md as the structure.

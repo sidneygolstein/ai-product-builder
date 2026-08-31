@@ -5,7 +5,9 @@
 
 SKIP_RE="node_modules|\.git|\.worktrees|dist|build|\.expo|\.next|__pycache__|coverage"
 STALE_DAYS=90
-CACHE_FILE="${TMPDIR:-/tmp}/apb-audit-$(basename "$PWD")-$(date +%Y-%m-%d).cache"
+# Key on the full path (hashed) so two repos sharing a folder name never collide.
+PWD_HASH=$(printf '%s' "$PWD" | cksum | cut -d' ' -f1)
+CACHE_FILE="${TMPDIR:-/tmp}/apb-audit-$(basename "$PWD")-${PWD_HASH}-$(date +%Y-%m-%d).cache"
 
 # Serve from daily cache if available
 if [ -f "$CACHE_FILE" ]; then
