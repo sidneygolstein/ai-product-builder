@@ -1,4 +1,4 @@
-# ai-product-builder — v2.2.0
+# ai-product-builder — v2.3.0
 
 A Claude Code plugin that encodes the full AI product development pipeline — from intent to shipped PR — as installable commands, subagents, skills, and hooks.
 
@@ -7,13 +7,13 @@ A Claude Code plugin that encodes the full AI product development pipeline — f
 ## Pipeline
 
 ```
-/brainstorm → /design (optional) → /tickets → /spec-review → /plan → /build → /verify → /ship → /land
-                                                   ↑ Gate 1          ↑ Gate 2         ↑ Gate 3
+/brainstorm → /design (optional) → /tickets → /spec-review → /plan → [ build ──> verify ──> ship ] → /land
+                                                   ↑ Gate 1          ↑ Gate 2    └── autonomous ──┘
 
 /debug (runtime bugs) ────────────────────→ /plan (feeds into main pipeline)
 ```
 
-Each stage is a slash command. Each gate requires explicit human approval before the next stage starts. `/debug` is an alternative entry point for discovered runtime bugs that feeds into the `/plan → /build → /verify → /ship → /land` phase.
+Human approval is front-loaded: Gate 1 (spec) and Gate 2 (plan). After the plan is approved, `/build` auto-chains through verification and shipping to an open PR — the human intervenes only on verifier `block`, simplifier `HOLD`, a CLAUDE.md proposal, or a third consecutive fix-loop block. Notion is optional (`notion_enabled` in `ai/config/notion.json`); when disabled the pipeline runs fully local on `ai/feature_list.json`. `/debug` is an alternative entry point for discovered runtime bugs that feeds into the `/plan → build → verify → ship → /land` phase.
 
 | Stage | Command | Agent involved | Output |
 |---|---|---|---|
@@ -27,7 +27,7 @@ Each stage is a slash command. Each gate requires explicit human approval before
 | Gate 3-prep | `/verify` | `verifier` | pass / warn / block with evidence; writes `ai/verdicts/<id>.md` on block |
 | on block | `/fix <id>` | — | Re-enter TDD from verifier failures in `ai/verdicts/<id>.md` |
 | runtime bug | `/debug` | `systematic-debugging` | Root-cause issue, log to `ai/diagnoses/`, file Bug ticket; feeds into `/plan → /build → /verify → /ship → /land` |
-| Gate 3 | `/ship` | `simplifier` (ui/backend only), `teacher` | PR + decision record shown inline to user; status → TO DEPLOY |
+| Gate 3 | `/ship` | `simplifier` (ui only), `teacher` | PR + decision record shown inline to user; status → TO DEPLOY |
 | post-merge | `/land` | `librarian` (final ticket of feature only) | Checkout main, mark DONE, clean up, sync CLAUDE.md, write handoff |
 
 ## Ticket types and technical shape
@@ -37,7 +37,7 @@ Each ticket carries a Notion `Type` (`Feature` · `Bug` · `Tech` · `Discovery`
 | Technical Shape | Description | Gates skipped |
 |---|---|---|
 | `ui` | Has a design handoff or modifies UI components/pages | None — full pipeline |
-| `backend` | Only touches API, service, DB, config, or infra layers | None — full pipeline (no design handoff required) |
+| `backend` | Only touches API, service, DB, config, or infra layers | Simplifier (verifier flags complexity as warnings); no design handoff required |
 | `trivial` | Small contained change: no new files, no logic change, ~50 lines max | `spec-reviewer` subagent, simplifier subagent, librarian |
 
 ## Install
@@ -59,7 +59,7 @@ Three-part process — skip for backend-only tickets:
 - **(c) In Claude Code:** ingests the handoff, flags ambiguities, and records the path in `refs` so `/tickets` and `/plan` reference it.
 
 ### `/tickets`
-Reads the PRD and design handoff; creates one independently shippable Notion ticket per unit of work (aim 2–4). Reads each ticket's `Technical Shape` (`ui`, `backend`, or `trivial`) directly from Notion — set by the human at creation, not inferred — and mirrors it as `technical_shape` in `ai/feature_list.json`. Each ticket has: Title, Type (`Feature` · `Bug` · `Tech` · `Discovery`), Status=TO SPEC REVIEW, 2–3 sentence description, testable ACs covering all four states, and Refs. Shows a draft first — creates in Notion only after confirmation. Saves `docs/specs/<feature>.md`.
+Reads the PRD and design handoff; creates one independently shippable ticket per unit of work (aim 2–4) — in Notion when enabled, otherwise directly in `ai/feature_list.json`. Technical shape (`ui`, `backend`, or `trivial`) is set by the human at creation, never inferred — read from the Notion `Technical Shape` property, or confirmed per ticket in the draft table when Notion is disabled — and mirrored as `technical_shape` in `ai/feature_list.json`. Each ticket has: Title, Type (`Feature` · `Bug` · `Tech` · `Discovery`), Status=TO SPEC REVIEW, 2–3 sentence description, testable ACs covering all four states, and Refs. Shows a draft first — creates in Notion only after confirmation. Saves `docs/specs/<feature>.md`.
 
 ### `/spec-review` — Gate 1
 Route depends on `technical_shape`:
@@ -72,29 +72,28 @@ On human approval, updates status to TO DO in Notion then `ai/feature_list.json`
 Creates an isolated git worktree at `.worktrees/<id>` on a feature branch. Enumerates failing tests to write first and every file to change. Updates status to DOING in Notion then `ai/feature_list.json`. Human approves the plan before any code is written. Development approach is always subagent-driven TDD.
 
 ### `/build`
-TDD implementation via context-preloaded subagents. Main session gathers all context first (plan, source file paths, test files, design handoff), then classifies tasks as INDEPENDENT or DEPENDENT — defaulting to INDEPENDENT; only marking DEPENDENT when task B concretely uses code or types that task A must produce first. Independent tasks are dispatched in parallel (multiple agents in one response); dependent chains run strictly sequentially. Each subagent receives file paths (not pasted content) and runs TDD: failing test first, implement until green, then scope-only tests to confirm local correctness. Full suite runs once at integrate, and output is saved to `ai/verdicts/<id>-tests.txt` for the verifier to read. Does not mark the ticket complete — the verifier decides.
+TDD implementation via context-preloaded subagents. Main session gathers all context first (plan, source file paths, test files, design handoff), then classifies tasks as INDEPENDENT or DEPENDENT — defaulting to INDEPENDENT; only marking DEPENDENT when task B concretely uses code or types that task A must produce first. Independent tasks are dispatched in parallel (multiple agents in one response); dependent chains run strictly sequentially. Each subagent receives file paths (not pasted content) and runs TDD: failing test first, implement until green, then scope-only tests to confirm local correctness. Full suite runs once at integrate, and output is saved to `ai/verdicts/<id>-tests.txt` for the verifier to read. Does not mark the ticket complete — when the suite is green it auto-continues into `/verify` without waiting for the user.
 
 ### `/next`
 Read-only. Reads `ai/feature_list.json`, applies priority order (critical `Bug` → DOING → TO SPEC REVIEW → TO DO → none), and prints the single highest-priority ticket with the exact command to run. A `Type=Bug` ticket with `severity: critical` pre-empts all other work. Use at session start when unsure what to work on.
 
 ### `/verify` — Gate 3 prep
-Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), then checks browser verification and every `definition_of_done` item. Browser verification is skipped (`N/A`) for `backend` and `trivial` tickets. Outputs `VERDICT: pass | warn | block` with evidence.
-- `pass` — status moves to TO REVIEW; proceed to `/ship`
-- `warn` — status moves to TO REVIEW; warnings are carried into the PR description for human review
-- `block` — status stays DOING; verifier writes `ai/verdicts/<id>.md`; run `/fix <id>`
+Dispatches the `verifier` subagent (did not write the code). Runs `ai/init.sh` (baseline), reads cached test results from `ai/verdicts/<id>-tests.txt` if available (re-runs the suite only if the file is missing), checks scope drift against the plan, every `definition_of_done` item, and scans the diff for structural debt (flagged as warnings — this replaces the simplifier for non-UI shapes). Outputs `VERDICT: pass | warn | block` with evidence.
+- `pass` / `warn` — status moves to TO REVIEW; auto-continues into `/ship` (warnings carried into the PR description)
+- `block` — stops; status stays DOING; verifier writes `ai/verdicts/<id>.md`; run `/fix <id>`
 
 ### `/debug`
 Front door for a discovered bug — root-causes the issue using systematic-debugging, logs findings to `ai/diagnoses/`, and files a Bug ticket in Notion without implementing a fix. Hands off to `/plan` for the fix phase.
 
 ### `/fix <id>`
-Re-enters TDD from a verifier block. Reads `ai/verdicts/<id>.md`, addresses each listed failure with a targeted failing test then implementation, runs scope-only tests to confirm local correctness, then runs the full suite once to confirm no cross-ticket regression. Saves the output to `ai/verdicts/<id>-tests.txt`. Does not change status — run `/verify` again when done.
+Re-enters TDD from a verifier block. Reads `ai/verdicts/<id>.md`, addresses each listed failure with a targeted failing test then implementation, runs scope-only tests to confirm local correctness, then runs the full suite once to confirm no cross-ticket regression. Saves the output to `ai/verdicts/<id>-tests.txt`. Does not change status — auto-runs `/verify` again when green. Bounded: after a third consecutive `block`, it stops and hands the ticket back to the human instead of looping.
 
 ### `/ship` — Gate 3
 Route depends on `technical_shape`:
-- **`ui` / `backend`:** runs `simplifier` subagent (no behaviour change) before opening the PR.
-- **`trivial`:** skips the simplifier — proceeds directly to PR.
+- **`ui`:** runs `simplifier` subagent (no behaviour change) before opening the PR.
+- **`backend` / `trivial`:** skips the simplifier — the verifier already flagged complexity as warnings. Available on explicit request.
 
-Updates status to TO DEPLOY in Notion then `ai/feature_list.json`. Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket. If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all required properties including the `Project` relation). Runs `teacher` subagent which **returns the full decision record inline** — the user reads, validates, and corrects the captured reasoning before the session closes. The teacher writes `ai/decisions/<feature>-<ticket-id>-<slug>.md`, appends a recap to `ai/progress.md`, and conditionally proposes CLAUDE.md additions for the user to approve. On PR approval, updates status to DONE in Notion then `ai/feature_list.json`.
+Updates status to TO DEPLOY (notion-board skill). Commits, pushes, opens a PR sourced from `ai/plans/<id>.md` with a link to the Notion ticket (when Notion is enabled). If the simplifier flags potential bugs, prompts the user to return to `/build` or open a follow-up Bug ticket (with all required properties including the `Project` relation). Runs `teacher` subagent which **returns the full decision record inline** — the user reads, validates, and corrects the captured reasoning before the session closes. The teacher writes `ai/decisions/<feature>-<ticket-id>-<slug>.md` (existence verified on disk, not by sentinel text), appends a recap to `ai/progress.md`, and conditionally proposes CLAUDE.md additions for the user to approve. Status stays TO DEPLOY until `/land` runs after the merge.
 
 ### `/land` — post-merge
 Run after the PR is approved and merged. Checks out main, pulls, sets status DONE in both Notion and `ai/feature_list.json`, removes the ticket worktree and branch (with confirmation).
@@ -109,7 +108,7 @@ Writes a handoff via the `handoff` skill (including any stale-doc flags from the
 |---|---|---|---|
 | `spec-reviewer` | Gate 1 — after `/tickets` (ui/backend only) | Did not author the tickets or specs | `Read`, `mcp__notion` |
 | `verifier` | Gate 3-prep — after `/build` | Did not write the code | `Read`, `Bash` |
-| `simplifier` | Inside `/ship` — before PR (ui/backend only) | Cannot fix bugs or change scope | `Read`, `Edit`, `Bash` |
+| `simplifier` | Inside `/ship` — before PR (ui only, or on request) | Cannot fix bugs or change scope | `Read`, `Edit`, `Bash` |
 | `teacher` | Inside `/ship` — before PR merge | Writes history, not code; **returns full decision record inline to the user** | `Read`, `Edit`, `Write`, `Bash` |
 | `librarian` | Inside `/land` — final ticket of a feature only | Reads ADR corpus, not code | `Read`, `Edit`, `Bash` |
 
@@ -142,7 +141,9 @@ These rules are copied into every project at setup (`ai/INVARIANTS.md`) and impo
 - A ticket is not done until `ai/init.sh` passes and every AC has a green test.
 - One ticket per session. Prefer small, independent tickets.
 - Teach as you go: explain decisions; write a decision record per ticket.
-- Ticket `Type` (Notion) is one of `Feature` · `Bug` · `Tech` · `Discovery`. `technical_shape` (`ui` / `backend` / `trivial`) is set in Notion as the `Technical Shape` property and determines which gates run — see the Ticket types and technical shape table above.
+- Auto-chain after Gate 2: `/build → verify → ship` runs to an open PR without prompts; stop only on verifier `block`, simplifier `HOLD`, a CLAUDE.md proposal, or a third consecutive fix-loop block.
+- Notion is optional (`notion_enabled` in `ai/config/notion.json`); when disabled, `ai/feature_list.json` is the sole source of truth.
+- Ticket `Type` is one of `Feature` · `Bug` · `Tech` · `Discovery`. `technical_shape` (`ui` / `backend` / `trivial`) is set by the human at ticket creation and determines which gates run — see the Ticket types and technical shape table above.
 
 ## Per-project setup
 
@@ -151,7 +152,7 @@ Each repo that uses this plugin needs an `ai/` folder:
 ```
 ai/
 ├── config/
-│   └── notion.json         # Notion database UUIDs (ticket_db_id, project_id, ...)
+│   └── notion.json         # notion_enabled flag + Notion database UUIDs (ticket_db_id, ...)
 ├── feature_list.json       # backlog + tickets + ACs + definition_of_done (machine-readable)
 ├── progress.md             # session handoff log + teacher recaps
 ├── plans/                  # approved plan per ticket — written by /plan, read by /build + /ship
@@ -162,22 +163,13 @@ ai/
 └── init.sh                 # baseline check: test && lint [&& typecheck]
 ```
 
-Run `/setup-project` — it interviews you one question at a time, resolves Notion IDs automatically, imports existing tickets, writes all files, and merges CLAUDE.md and hook config. Or bootstrap manually:
-
-```bash
-mkdir -p ai/config ai/decisions ai/diagnoses
-cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/feature_list.json ai/
-cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/progress.md ai/
-cp ~/.claude/plugins/cache/sidneygolstein-ai-product-builder/ai-product-builder/templates/init.sh ai/ && chmod +x ai/init.sh
-```
-
-Then edit `ai/init.sh` with this repo's real test/lint/build command, and create `ai/config/notion.json` with your Ticket Backlog and Projects database UUIDs.
+Run `/setup-project` — it interviews you one question at a time, resolves Notion IDs automatically (or sets `notion_enabled: false` for a fully local project), imports existing tickets, writes all files, and merges CLAUDE.md and hook config. The SessionStart hook also scaffolds a minimal `ai/` automatically the first time a session opens in an unconfigured repo.
 
 ## Required MCPs
 
 | MCP | Used by |
 |---|---|
-| **Notion** | `/tickets`, `/spec-review`, `/plan`, `/verify`, `/ship`, `notion-board` skill |
+| **Notion** (optional) | `/tickets`, `/spec-review`, `/plan`, `/verify`, `/ship`, `notion-board` skill — not needed when `notion_enabled` is `false` |
 | **GitHub** | `/ship` (PR creation) |
 
 ## Status flow
@@ -186,7 +178,7 @@ Then edit `ai/init.sh` with this repo's real test/lint/build command, and create
 TO SPEC REVIEW → TO DO → DOING → TO REVIEW → TO DEPLOY → DONE
 ```
 
-Status values are case-sensitive. Both the Notion ticket and `ai/feature_list.json` must always reflect the same value — the `notion-board` skill enforces write order to prevent divergence.
+Status values are case-sensitive. When Notion is enabled, the Notion ticket and `ai/feature_list.json` must always reflect the same value — the `notion-board` skill enforces write order to prevent divergence. When disabled, `ai/feature_list.json` alone carries the status.
 
 | Status | Set by | When |
 |---|---|---|
@@ -194,7 +186,7 @@ Status values are case-sensitive. Both the Notion ticket and `ai/feature_list.js
 | `TO DO` | `/spec-review` | Gate 1 passed, human approved |
 | `DOING` | `/plan` | Gate 2 passed, worktree created |
 | `TO REVIEW` | `/verify` | Verifier returned `pass` |
-| `TO DEPLOY` | `/ship` | Simplifier attested no behaviour change (or trivial ticket bypassed simplifier) |
+| `TO DEPLOY` | `/ship` | Simplifier attested no behaviour change (`ui`), or simplifier skipped (`backend` / `trivial`) |
 | `DONE` | `/land` | PR merged, main pulled, worktree cleaned |
 
 **Bug tickets from `/debug`** are created directly at `TO DO` (with `severity`), skipping `TO SPEC REVIEW` — the `ai/diagnoses/<bug-id>.md` root-cause record serves as the spec. A `severity: critical` bug is surfaced first by `/next`.

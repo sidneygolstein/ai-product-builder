@@ -15,7 +15,8 @@ Run only after the PR is merged. If unsure, check with the user before proceedin
    If either command fails, stop and report the error — do not continue.
 
 3. **Set status DONE** — use the notion-board skill to move the ticket to DONE.
-   Update both Notion and ai/feature_list.json. Follow the status transition protocol exactly.
+   Follow the status transition protocol exactly (the skill handles Notion-enabled vs
+   local-only).
 
 4. **Clean up worktree and branch** — read the ticket's `worktree` and `branch` from
    ai/feature_list.json. Ask:

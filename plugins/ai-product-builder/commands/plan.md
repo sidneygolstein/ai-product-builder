@@ -3,7 +3,8 @@ description: Gate 2 — plan + isolated worktree per ticket. Use after /spec-rev
 ---
 Take ticket <id> from ai/feature_list.json (Project=<project>). Create an isolated git worktree
 at .worktrees/<id> on branch feature/<feature>-<id> from up-to-date main. Update status to
-DOING — Notion first (notion-board skill), then ai/feature_list.json.
+DOING via the notion-board skill (it routes to Notion + local, or local-only when
+notion_enabled is false).
 Plan: reuse existing <service/module> + design system; implement on `<path>` to match
 docs/design/<feature>/; behind `<feature_flag>`; emit `<event_name>`; no new infra.
 Enumerate test cases (populated, missing, loading, flag-off) as failing tests to write first.

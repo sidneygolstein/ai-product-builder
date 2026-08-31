@@ -1,6 +1,6 @@
 ---
 name: simplifier
-description: Use after /verify returns pass, before /ship opens the PR. Status moves from DOING to TO DEPLOY only after simplifier attests no behaviour change. Isolated so it cannot fix bugs or change scope — only clean structure.
+description: Use inside /ship for ui tickets (or on explicit user request), after /verify passes and before the PR opens. Status moves from TO REVIEW to TO DEPLOY only after simplifier attests no behaviour change. Isolated so it cannot fix bugs or change scope — only clean structure.
 tools: Read, Edit, Bash(git diff *, git status *)
 model: claude-sonnet-4-6
 ---

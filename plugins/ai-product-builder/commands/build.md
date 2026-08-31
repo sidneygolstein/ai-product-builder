@@ -11,7 +11,7 @@ If `technical_shape` is `trivial`:
   1. Write the failing test first. Run it to confirm it fails.
   2. Implement the minimum code to make it pass.
   3. Run the full test suite. Save output to `ai/verdicts/<id>-tests.txt` (create `ai/verdicts/` if needed).
-  4. Do NOT mark complete or change status — the verifier decides.
+  4. Do NOT mark complete or change status — the verifier decides. Proceed to Step 5.
 
 If `technical_shape` is `ui` or `backend`: proceed to Step 1.
 
@@ -54,6 +54,12 @@ When all agents return: run the full test suite once across the entire worktree.
 to `ai/verdicts/<id>-tests.txt` (create `ai/verdicts/` if needed) — the verifier reads this
 to avoid re-running the suite. If anything is red, investigate conflicts between agents before
 re-dispatching.
+
+**Step 5 — Auto-verify (do not wait for the user)**
+When the full suite is green, immediately continue into `/verify` — dispatch the verifier
+subagent without asking. The human already approved the plan at Gate 2; the next human
+touchpoint is only on failure (verifier `block`, simplifier `HOLD`) or a CLAUDE.md proposal.
+Announce the transition in one line ("Build green — running independent verification.").
 
 **Simplicity ladder** — before writing any implementation code, stop at the first rung that holds:
 1. Does this need to exist at all? Speculative need = skip it. (YAGNI)

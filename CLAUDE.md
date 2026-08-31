@@ -44,8 +44,9 @@ claude plugin upgrade ai-product-builder@sidneygolstein --scope user
 
 - **One ticket per session.** Each pipeline run handles exactly one ticket end-to-end.
 - **Independent subagents at every quality gate.** The agent that wrote the code never verifies it.
-- **Notion is the system of record.** Always write Notion first, then `ai/feature_list.json`. Never reverse.
-- **technical_shape drives gate selection.** Set in Notion as the `Technical Shape` property, mirrored into `ai/feature_list.json`. `ui` and `backend` = full pipeline (backend needs no design handoff). `trivial` = skip spec-reviewer, simplifier, and librarian; build inline. Canonical definition: `plugins/ai-product-builder/INVARIANTS.md` — keep the two in sync.
+- **Notion is optional** (`ai/config/notion.json` → `notion_enabled`). When enabled it is the system of record: always write Notion first, then `ai/feature_list.json`, never reverse. When disabled, `ai/feature_list.json` is the sole source of truth and no MCP call is made.
+- **Auto-chain after Gate 2.** Once the plan is approved, `/build → verify → ship` runs to an open PR without prompts; humans intervene only on verifier `block`, simplifier `HOLD`, a CLAUDE.md proposal, or a third consecutive fix-loop block.
+- **technical_shape drives gate selection.** Set by the human at ticket creation, mirrored into `ai/feature_list.json`. `ui` = full pipeline. `backend` = skip simplifier (verifier flags complexity) and design handoff. `trivial` = skip spec-reviewer, simplifier, and librarian; build inline. Canonical definition: `plugins/ai-product-builder/INVARIANTS.md` — keep the two in sync.
 - **Teacher returns full output.** Never summarize — paste the full decision record inline so the user can validate before the session closes.
 - **Librarian runs once per feature** (final `/land` only, when all sibling tickets are DONE). It synthesizes cross-ticket ADRs into CLAUDE.md. Never runs mid-feature.
 
@@ -55,7 +56,7 @@ claude plugin upgrade ai-product-builder@sidneygolstein --scope user
 |---|---|---|---|
 | `spec-reviewer` | `/spec-review` (ui/backend only) | Tickets, specs | Edits to tickets + specs |
 | `verifier` | `/verify` | Diff, tests, init.sh | `ai/verdicts/<id>.md` |
-| `simplifier` | `/ship` (ui/backend only) | Diff | ATTESTATION or HOLD |
+| `simplifier` | `/ship` (ui only, or on request) | Diff | ATTESTATION or HOLD |
 | `teacher` | `/ship` | Diff, PRD, spec | ADR, progress recap — **returned inline to user** |
 | `librarian` | `/land` (final ticket only) | All ADRs for feature | CLAUDE.md promotions |
 

@@ -84,7 +84,7 @@ If nothing qualifies, skip this step entirely. Do not propose additions for the 
 Do NOT return a one-line confirmation. Return the full content of what you captured so the user can read, validate, and correct it while the context is still fresh:
 
 1. **Paste the complete decision record verbatim** — every section, exactly as written to the file. This is the user's only chance to catch a misattributed decision before it becomes permanent.
-2. State: `FILE WRITTEN: ai/decisions/<path>.md` — this sentinel tells the main session the file was created and it must NOT write the file itself.
+2. State the exact path of the file you wrote: `FILE WRITTEN: ai/decisions/<path>.md`. (Informational — the main session verifies the file's existence on disk, and must NOT write the file itself.)
 3. State: `Progress recap appended to ai/progress.md`
 4. If section 3 triggered: include the full proposed CLAUDE.md diff inline under "Proposed CLAUDE.md addition". The main session will gate the confirmation with the user.
 5. If nothing qualified for CLAUDE.md: say so in one line.

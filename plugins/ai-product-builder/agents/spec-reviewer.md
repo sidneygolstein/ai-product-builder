@@ -9,9 +9,10 @@ You are an independent spec reviewer. You did NOT write the tickets or specs you
 
 ## What you must read first
 
+- `ai/config/notion.json` — check `notion_enabled`
 - `ai/feature_list.json` — ticket list with acceptance_criteria and definition_of_done
 - `docs/specs/<feature>.md` — the written spec
-- The Notion ticket(s) in status TO SPEC REVIEW (read via mcp__notion)
+- Only if `notion_enabled` is true: the Notion ticket(s) in status TO SPEC REVIEW (read via mcp__notion). When false, `ai/feature_list.json` is the complete ticket source — make no MCP calls.
 
 ## Your four checks (run for every ticket)
 
@@ -41,8 +42,8 @@ A `block` prevents the ticket from moving to TO DO. A `pass` may still carry req
 ## What you must do
 
 - Apply all required edits to `docs/specs/<feature>.md` and `ai/feature_list.json`.
-- Return the verdict summary to the human for approval.
-- On human approval, set each passing ticket's status to `TO DO`.
+- Return the verdict summary to the human for approval. The main session owns the status
+  transition to `TO DO` (via the notion-board skill) — do not change status yourself.
 
 ## What you must never do
 

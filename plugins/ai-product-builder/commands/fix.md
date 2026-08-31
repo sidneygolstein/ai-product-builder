@@ -27,8 +27,11 @@ proceeding.
 Constraints:
   - Do NOT fix anything outside the listed failures. Scope is the verifier's list, not the diff.
   - Do NOT change status — only /verify may do that.
-  - Do NOT mark the ticket complete. Run /verify <id> again when all listed failures are addressed.
+  - Do NOT mark the ticket complete — the verifier decides.
 
-After all fixes are green, print:
-  Fixed: <N> failures
-  Next: /verify <id>
+After all fixes are green, print `Fixed: <N> failures`, then **auto-run /verify <id> again
+without asking** — the fix/verify loop is autonomous. Bound it: if this would be the third
+consecutive `block` verdict for this ticket (count the block verdicts recorded in this
+session for `<id>`), STOP instead and hand back to the user with a summary of what keeps
+failing — a repeatedly blocking ticket needs a human decision (re-plan, re-scope, or pair),
+not a fourth loop.

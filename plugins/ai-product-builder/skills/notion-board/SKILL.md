@@ -14,6 +14,17 @@ How to interact with the Ticket Backlog database for the ai-product-builder pipe
 
 Do not guess property names or status values — every field name and status string in this skill is exact and case-sensitive.
 
+## Notion is optional — check first
+
+Before ANY Notion operation, read `notion_enabled` from `ai/config/notion.json`.
+
+- `notion_enabled` is `false`, or the file is missing: **make no MCP calls at all.**
+  `ai/feature_list.json` is the sole source of truth — perform every read, create, and
+  status update there directly, then return. Everything below this section applies only
+  when Notion is enabled.
+- `notion_enabled` is `true` or absent from an otherwise-populated config (legacy
+  projects): Notion is the system of record — follow the rest of this skill exactly.
+
 ## MCP tools
 
 Use only these tools. Do not use WebFetch or the Notion REST API directly.
@@ -32,12 +43,13 @@ Required before any Notion call. Read from `ai/config/notion.json`:
 
 ```json
 {
+  "notion_enabled": true,
   "ticket_db_id": "<Notion database UUID>",
   "project_id":   "<Notion project page UUID>"
 }
 ```
 
-If `ai/config/notion.json` is missing or either field is empty, stop and ask the user — do not search Notion blindly.
+If `notion_enabled` is true but `ticket_db_id` or `project_id` is missing or empty, stop and ask the user — do not search Notion blindly.
 
 ## Database properties
 

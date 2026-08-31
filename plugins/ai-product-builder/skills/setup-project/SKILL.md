@@ -55,7 +55,10 @@ Used as the display name and as the Projects database lookup key. If a Notion ba
 exists, this must match the `Project` value used there exactly.
 
 **Q2. Does this project have a Notion Ticket Backlog? (Y/n)**
-If yes → ask Q2a. If no → skip to Q3a.
+If yes → ask Q2a, and `ai/config/notion.json` gets `"notion_enabled": true`.
+If no → skip to Q3a, and write `ai/config/notion.json` with `"notion_enabled": false` and
+all other fields `""` — the pipeline then runs fully local on `ai/feature_list.json`,
+and every Notion step below (3, 4a, 7) is skipped.
 
 **Q2a. Which `Project` value identifies this project's tickets?**
 Use `mcp__notion__notion-search` with `query="Ticket Backlog"` and show the user the

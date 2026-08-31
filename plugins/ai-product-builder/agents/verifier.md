@@ -19,6 +19,7 @@ You are an independent verifier. You did NOT write this code. Your job is to gra
 2. **Scope check** — run `git diff --name-only main...HEAD` in the ticket's worktree. Compare against the file list in `ai/plans/<ticket-id>.md`. Files changed that are not in the plan = warn (surface to human — scope drift is not an automatic block, but must be visible). Files in the plan that were not changed = warn (possibly incomplete).
 3. **Test suite** — check for `ai/verdicts/<ticket-id>-tests.txt`, written by `/build` Step 4 or `/fix`. If it exists, read it as the test result and treat a clean run as evidence equivalent to running the suite yourself. Only re-run the test command if the file is missing or if the diff shows test file changes that post-date it. Every AC must have a green test. Missing coverage = warn or block.
 4. **DoD check** — verify every item in the ticket's `definition_of_done` has evidence. Items without evidence = block.
+5. **Complexity scan** (never blocks) — read the diff for obvious structural debt: dead code, an abstraction with a single implementation, config for values that never change, duplicated logic, a new dependency where a few lines would do. List findings under Warnings. This replaces the standalone simplifier for `backend` and `trivial` tickets — you flag, the human decides; do not edit anything.
 
 ## Verdict definitions
 

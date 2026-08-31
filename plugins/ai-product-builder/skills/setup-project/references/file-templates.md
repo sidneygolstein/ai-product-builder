@@ -9,6 +9,7 @@ the `<placeholder>` values.
 
 ```json
 {
+  "notion_enabled": <true if Q2 = Y, false if Q2 = n>,
   "ticket_db_id": "<data-source UUID of Ticket Backlog — from collection:// URL>",
   "project_id":   "<page UUID of this project's row in the Projects database>",
   "projects_db_id": "<data-source UUID of Projects database — from collection:// URL>",
@@ -17,8 +18,12 @@ the `<placeholder>` values.
 ```
 
 **Field contract:**
+- `notion_enabled` — read by the `notion-board` skill before ANY Notion operation. When
+  `false`, the pipeline runs fully local: `ai/feature_list.json` is the sole source of
+  truth and no MCP call is ever made. Write `false` with all other fields `""` when the
+  project has no Notion backlog (Q2 = n).
 - `ticket_db_id` and `project_id` — read by the `notion-board` skill before every Notion
-  call. Hard-stop if either is missing or empty.
+  call. Hard-stop if either is missing or empty (only when `notion_enabled` is true).
 - `projects_db_id` — used by `setup-project` Step 7 for the Projects DB upsert.
 - `backlog_key` — informational; helps debug filter mismatches.
 
