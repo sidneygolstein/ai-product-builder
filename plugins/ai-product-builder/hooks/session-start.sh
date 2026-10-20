@@ -29,13 +29,37 @@ if command -v fnm &>/dev/null; then
     eval "$(fnm env 2>/dev/null)" 2>/dev/null || true
 fi
 
-if [ -f ai/init.sh ]; then
+# Run `cmd...` for at most `secs` seconds; 124 when it was stopped. macOS ships no `timeout`, so without
+# timeout/gtimeout the command runs in the background and its whole process tree is stopped at the limit.
+_kill_tree() {
+    local child
+    for child in $(pgrep -P "$1" 2>/dev/null); do _kill_tree "$child"; done
+    kill -TERM "$1" 2>/dev/null
+}
+_with_timeout() {
+    local secs=$1; shift
+    if command -v timeout &>/dev/null; then timeout "$secs" "$@"; return; fi
+    if command -v gtimeout &>/dev/null; then gtimeout "$secs" "$@"; return; fi
+    local flag pid watcher ec
+    flag=$(mktemp -t apb-baseline) || { "$@"; return; }
+    "$@" & pid=$!
+    ( sleep "$secs"; [ -f "$flag" ] && : > "$flag.timeout" && _kill_tree "$pid" ) & watcher=$!
+    wait "$pid"; ec=$?
+    _kill_tree "$watcher"; wait "$watcher" 2>/dev/null
+    if [ -f "$flag.timeout" ]; then ec=124; fi
+    rm -f "$flag" "$flag.timeout"
+    return "$ec"
+}
+
+# A session started by the Agent SDK (a voice companion, a script) skips it: nobody reads the result there,
+# and the SDK gives a session only 60 s to start, hooks included.
+case "${CLAUDE_CODE_ENTRYPOINT:-}" in
+    sdk-*) _skip_baseline=1 ;;
+esac
+
+if [ -f ai/init.sh ] && [ -z "${_skip_baseline:-}" ]; then
     printf '\n[baseline] Running ai/init.sh (30s timeout)...\n'
-    # macOS ships no `timeout`; use it (or gtimeout) when present, else run without a hard limit.
-    if command -v timeout &>/dev/null; then _to="timeout 30"
-    elif command -v gtimeout &>/dev/null; then _to="gtimeout 30"
-    else _to=""; fi
-    if $_to bash ai/init.sh 2>&1; then
+    if _with_timeout 30 bash ai/init.sh 2>&1; then
         printf '[baseline] Passed.\n'
     else
         _ec=$?
